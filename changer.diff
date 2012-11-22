@@ -1,6 +1,6 @@
 diff -u --new-file --recursive linux.vanilla/CREDITS linux.changer/CREDITS
 --- linux.vanilla/CREDITS	Mon Mar 22 20:18:17 1999
-+++ linux.changer/CREDITS	Wed Mar 24 20:11:54 1999
++++ linux.changer/CREDITS	Tue Mar 30 19:43:18 1999
 @@ -1287,6 +1287,17 @@
  D: XF86_8514
  D: cfdisk (curses based disk partitioning program)
@@ -20,8 +20,8 @@ diff -u --new-file --recursive linux.vanilla/CREDITS linux.changer/CREDITS
  E: mike.mclagan@linux.org
  W: http://www.invlogic.com/~mmclagan
 diff -u --new-file --recursive linux.vanilla/Documentation/Configure.help linux.changer/Documentation/Configure.help
---- linux.vanilla/Documentation/Configure.help	Sun Mar 21 16:22:00 1999
-+++ linux.changer/Documentation/Configure.help	Wed Mar 24 20:12:56 1999
+--- linux.vanilla/Documentation/Configure.help	Thu Apr  8 01:25:26 1999
++++ linux.changer/Documentation/Configure.help	Tue Mar 30 19:43:18 1999
 @@ -231,6 +231,20 @@
  
    Most users will answer N here.
@@ -44,8 +44,8 @@ diff -u --new-file --recursive linux.vanilla/Documentation/Configure.help linux.
  CONFIG_BLK_DEV_NBD
    Saying Y here will allow your computer to be a client for network
 diff -u --new-file --recursive linux.vanilla/MAINTAINERS linux.changer/MAINTAINERS
---- linux.vanilla/MAINTAINERS	Mon Mar 22 20:18:17 1999
-+++ linux.changer/MAINTAINERS	Wed Mar 24 20:13:22 1999
+--- linux.vanilla/MAINTAINERS	Thu Apr  8 01:25:26 1999
++++ linux.changer/MAINTAINERS	Tue Mar 30 19:43:18 1999
 @@ -220,6 +220,13 @@
  L:	netdev@roxanne.nuclecu.unam.mx
  S:	Maintained
@@ -60,9 +60,21 @@ diff -u --new-file --recursive linux.vanilla/MAINTAINERS linux.changer/MAINTAINE
  DEVICE NUMBER REGISTRY
  P:	H. Peter Anvin
  M:	hpa@zytor.com
+diff -u --new-file --recursive linux.vanilla/Makefile linux.changer/Makefile
+--- linux.vanilla/Makefile	Thu Apr  8 01:25:27 1999
++++ linux.changer/Makefile	Tue Mar 30 19:43:30 1999
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 2
+ SUBLEVEL = 5
+-EXTRAVERSION = -ac1
++EXTRAVERSION = -ac1-changer
+ 
+ ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
+ 
 diff -u --new-file --recursive linux.vanilla/drivers/block/Config.in linux.changer/drivers/block/Config.in
 --- linux.vanilla/drivers/block/Config.in	Tue Dec 29 20:21:49 1998
-+++ linux.changer/drivers/block/Config.in	Wed Mar 24 20:14:17 1999
++++ linux.changer/drivers/block/Config.in	Tue Mar 30 19:43:18 1999
 @@ -94,6 +94,7 @@
  comment 'Additional Block Devices'
  
@@ -73,7 +85,7 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/Config.in linux.chang
  fi
 diff -u --new-file --recursive linux.vanilla/drivers/block/Makefile linux.changer/drivers/block/Makefile
 --- linux.vanilla/drivers/block/Makefile	Wed Sep 16 22:25:56 1998
-+++ linux.changer/drivers/block/Makefile	Wed Mar 24 20:14:53 1999
++++ linux.changer/drivers/block/Makefile	Tue Mar 30 19:43:18 1999
 @@ -94,6 +94,14 @@
    endif
  endif
@@ -91,10 +103,10 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/Makefile linux.change
  endif
 diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.changer/drivers/block/changer.c
 --- linux.vanilla/drivers/block/changer.c	Thu Jan  1 01:00:00 1970
-+++ linux.changer/drivers/block/changer.c	Wed Mar 24 20:52:53 1999
-@@ -0,0 +1,1045 @@
++++ linux.changer/drivers/block/changer.c	Thu Apr  8 01:29:49 1999
+@@ -0,0 +1,1055 @@
 +/**********************************************************************************************************************
-+  /dev/changer by Jeroen Massar aka Fuzzel/Un(f)iX <jmassar@unfix.org>               http://unfix.org/projects/changer
++  /dev/changer by Jeroen Massar aka Fuzzel/unfix <jmassar@unfix.org>               http://unfix.org/projects/changer
 +***********************************************************************************************************************
 + TAB=3
 +
@@ -176,9 +188,11 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +			Jeroen "Spook" Akershoek, Vera "Fear" Mafait
 +			- for being Un(f)iX...
 +		Beer/Neworder & Andabata
-+			- The Webhosting of unfix.org.
++			- The hosting of unfix.org.
 +		#linux.nl
 +			- for the general laughter...
++		Thomas E. Dodd
++			- for the wrapper_open fix.
 +
 + History (child=underlying lowleveldriver)
 +	20 November 1998
@@ -254,18 +268,20 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +	== CeBIT 1999 ==
 +	23 March 1999
 +		- Compiled and tested the thing, and it now works for 100%.
-+	24 March 1999
++	24 March 1999 (RELEASED (bz2+tgz)
 +		- Changed the entries above from March 1998 in March 1999 as that is the current year now...
 +		- Moved the invalidate_buffers() call to changer_change_slot() so all functions changing use it.
 +		- changer_change_slot() will now only do a select_disc()+invalidate_buffer() when the current!=wanted
 +		  this way buffers are kept when no slots are changed in between requests/commands which should speed
 +		  up some stuff.
 +		- Added tests for changer_change_slot(), whether the correct slot is actually selected or not.
++	07 April 1999 (RELEASED (bz2+tgz) beta 2)
++		- Fixed the wrapper_open function which was a very, non-obvious, stupid mistake.
++		  Thanx to Thomas E. Dodd <ted@cypress.com> for finding it and for for the fix :)
++		  This should fix almost all of the bugs left...
 +
 +Notes:
 +	drive_status & media_changed also pass along a slot number... does it have to be changed first then?
-+	And eehmmm it doesn't lock the drive on mount... ("lock the changer.... didn't lock the changer").
-+	It does unlock though... the lock command doesn't get issued or something.
 +
 +Todo
 +	- *Global* spinlock/mutex for the global lists (making it 100% multi-threaded(-kernel) safe).
@@ -279,7 +295,9 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +	  I'll firstly implement method 1, then I'll implement method 2 which would also be a great improvement for other
 +	  drivers which could get a great improvement as they get semi-sequential requests. It should be able to disable it
 +	  for seperate drives, especially for drives like the Atlas3 and alike which do it much better in hardware.
-+	- VFS Discchange notify.
++	  Alan Cox mentioned to me that it's probably possible to use a gig per slot so the kernel does the reordering...
++	  I'm working on this...
++	- VFS Discchange notify
 +	- CHANGER_GET IOCTL for checking which changer:minor & name is connected to what device?
 +	- CHANGER_SET_LEVEL IOCTL for runtime setting output-levels.
 +	** CLEANUP THE CODE...
@@ -342,7 +360,7 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +/**********************************************************************************************************************
 +  Global Static Definitions
 +**********************************************************************************************************************/
-+#include <linux/changer.h>
++#include "changer.h"
 +
 +const char c_full[]	= CHANGER_FULL;
 +const char c_short[]	= CHANGER_SHORT;
@@ -447,7 +465,7 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +static int changer_blksizes[CHANGER_MAX_MINOR];								/* Block Sizes. */
 +static struct changer_maj changer_majors[MAX_BLKDEV];						/* Which slot is which of my minors?
 +																							   For dup-checking. */
-+int changer_output_level=LEVEL_INFO|LEVEL_ERR;						/* Output level. */
++int changer_output_level=LEVEL_INFO|LEVEL_ERR;								/* Output level. */
 +
 +/* capabilities (all except CDC_SELECT_DISC) */
 +#define CHANGER_CAPABILITIES	CDC_CLOSE_TRAY|CDC_OPEN_TRAY|CDC_LOCK|CDC_SELECT_SPEED| \
@@ -582,7 +600,7 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +					INFO(LEVEL_INFO,"changer_set(): Setting minor=%02x device major:minor %02x:%02x slot %d...\n",minor,maj,min,set->slot);
 +					/* Open the child device. */
 +					if (((changer_majors[maj].opencount)>0)||
-+							(((changer_majors[maj].opencount)==0)&&(result=changer_wrap_open(o_cdi)==0)))
++							(((changer_majors[maj].opencount)==0)&&(result=changer_wrap_open(cdi)==0)))
 +					{
 +						DEBUG(LEVEL_INFO,"changer_set(): Initializing...\n");
 +						changer_majors[maj].opencount++;
@@ -644,6 +662,7 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +	struct inode	ip;
 +	struct file		fp;
 +
++	DEBUG(LEVEL_FUNC,"changer_wrap_open()\n");
 +	blk_size[MAJOR_NR][minor]=blk_size[MAJOR(CHG.dev)][MINOR(CHG.dev)];
 +	ip.i_rdev=CHG.dev;
 +	fp.f_flags=O_NONBLOCK;
@@ -657,6 +676,7 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +	struct inode	ip;
 +	struct file		fp;
 +
++	DEBUG(LEVEL_FUNC,"changer_wrap_release()\n");
 +	ip.i_rdev=CHG.dev;
 +	fp.f_flags=O_NONBLOCK;
 +	fp.f_mode=0;
@@ -783,10 +803,12 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +/**********************************************************************************************************************
 +  Initialization and other relevant wrappers.
 +**********************************************************************************************************************/
++#ifndef MODULE
 +__initfunc(static void changer_setup(char *str, int *ints))
 +{
 +	DEBUG(LEVEL_FUNC,"changer_setup()\n");
 +}
++#endif
 +
 +__initfunc(static void changer_cleanup(void))
 +{
@@ -1140,7 +1162,7 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/changer.c linux.chang
 +
 diff -u --new-file --recursive linux.vanilla/drivers/block/ll_rw_blk.c linux.changer/drivers/block/ll_rw_blk.c
 --- linux.vanilla/drivers/block/ll_rw_blk.c	Fri Mar 12 08:20:14 1999
-+++ linux.changer/drivers/block/ll_rw_blk.c	Wed Mar 24 20:18:19 1999
++++ linux.changer/drivers/block/ll_rw_blk.c	Tue Mar 30 19:43:19 1999
 @@ -443,8 +443,9 @@
  
  /* look for a free request. */
@@ -1178,7 +1200,7 @@ diff -u --new-file --recursive linux.vanilla/drivers/block/ll_rw_blk.c linux.cha
  };
 diff -u --new-file --recursive linux.vanilla/drivers/cdrom/Makefile linux.changer/drivers/cdrom/Makefile
 --- linux.vanilla/drivers/cdrom/Makefile	Fri Aug 21 00:17:06 1998
-+++ linux.changer/drivers/cdrom/Makefile	Wed Mar 24 20:19:07 1999
++++ linux.changer/drivers/cdrom/Makefile	Tue Mar 30 19:43:19 1999
 @@ -24,6 +24,7 @@
  # Each configuration option enables a list of files.
  
@@ -1188,8 +1210,8 @@ diff -u --new-file --recursive linux.vanilla/drivers/cdrom/Makefile linux.change
  obj-$(CONFIG_PARIDE_PCD)	+=		cdrom.o
  
 diff -u --new-file --recursive linux.vanilla/include/linux/blk.h linux.changer/include/linux/blk.h
---- linux.vanilla/include/linux/blk.h	Tue Mar 23 22:54:54 1999
-+++ linux.changer/include/linux/blk.h	Wed Mar 24 20:21:43 1999
+--- linux.vanilla/include/linux/blk.h	Thu Apr  8 01:25:32 1999
++++ linux.changer/include/linux/blk.h	Tue Mar 30 19:47:51 1999
 @@ -63,6 +63,7 @@
  extern int ez_init(void);
  extern int bpcd_init(void);
@@ -1198,7 +1220,7 @@ diff -u --new-file --recursive linux.vanilla/include/linux/blk.h linux.changer/i
  
  extern void set_device_ro(kdev_t dev,int flag);
  void add_blkdev_randomness(int major);
-@@ -354,6 +355,14 @@
+@@ -363,6 +364,14 @@
  #define DEVICE_REQUEST do_nbd_request
  #define DEVICE_NR(device) (MINOR(device))
  #define DEVICE_ON(device) 
@@ -1212,13 +1234,13 @@ diff -u --new-file --recursive linux.vanilla/include/linux/blk.h linux.changer/i
 +#define DEVICE_ON(device)
  #define DEVICE_OFF(device)
  
- #endif /* MAJOR_NR == whatever */
+ #elif (MAJOR_NR == I2O_MAJOR)
 diff -u --new-file --recursive linux.vanilla/include/linux/changer.h linux.changer/include/linux/changer.h
 --- linux.vanilla/include/linux/changer.h	Thu Jan  1 01:00:00 1970
-+++ linux.changer/include/linux/changer.h	Wed Mar 24 20:53:07 1999
++++ linux.changer/include/linux/changer.h	Thu Apr  8 01:30:38 1999
 @@ -0,0 +1,70 @@
 +/**********************************************************************************************************************
-+  /dev/changer by Jeroen Massar aka Fuzzel/Un(f)iX <jmassar@unfix.org>               http://unfix.org/projects/changer
++  /dev/changer by Jeroen Massar aka Fuzzel/unfix <jmassar@unfix.org>               http://unfix.org/projects/changer
 +***********************************************************************************************************************
 + TAB=3
 + See changer.c for more info.
@@ -1235,8 +1257,8 @@ diff -u --new-file --recursive linux.vanilla/include/linux/changer.h linux.chang
 +#define CHANGER_SHORT	"changer"
 +#define CHANGER_AUTHOR	"Jeroen Massar <jmassar@unfix.org>"
 +#define CHANGER_FULL		"/dev/changer"
-+#define CHANGER_DATE		"24 March 1999"
-+#define CHANGER_VERSION	19990324
++#define CHANGER_DATE		"07 April 1999"
++#define CHANGER_VERSION	19990703
 +#define CHANGER_WWW		"http://unfix.org/projects/changer"
 +#define CHANGER_DEVNAME	"changer"
 +
@@ -1288,8 +1310,8 @@ diff -u --new-file --recursive linux.vanilla/include/linux/changer.h linux.chang
 +#endif _CHANGER_H
 +
 diff -u --new-file --recursive linux.vanilla/include/linux/major.h linux.changer/include/linux/major.h
---- linux.vanilla/include/linux/major.h	Wed Oct 14 20:43:14 1998
-+++ linux.changer/include/linux/major.h	Wed Mar 24 20:22:13 1999
+--- linux.vanilla/include/linux/major.h	Thu Apr  8 01:25:32 1999
++++ linux.changer/include/linux/major.h	Tue Mar 30 19:43:19 1999
 @@ -72,6 +72,7 @@
  #define Z2RAM_MAJOR	37
  #define APBLOCK_MAJOR   38   /* AP1000 Block device */
@@ -1300,7 +1322,7 @@ diff -u --new-file --recursive linux.vanilla/include/linux/major.h linux.changer
  #define RISCOM8_CALLOUT_MAJOR 49
 diff -u --new-file --recursive linux.vanilla/init/main.c linux.changer/init/main.c
 --- linux.vanilla/init/main.c	Thu Feb 25 01:27:54 1999
-+++ linux.changer/init/main.c	Wed Mar 24 20:24:46 1999
++++ linux.changer/init/main.c	Tue Mar 30 19:43:19 1999
 @@ -338,6 +338,10 @@
  extern void md_setup(char *str,int *ints) __init;
  #endif
