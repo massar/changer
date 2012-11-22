@@ -1,7 +1,7 @@
-diff -u --new-file --recursive linux.vanilla.226ac2/CREDITS linux.changer.226ac2/CREDITS
---- linux.vanilla.226ac2/CREDITS	Thu Apr 29 11:13:13 1999
-+++ linux.changer.226ac2/CREDITS	Thu Apr 29 10:21:05 1999
-@@ -1288,6 +1288,17 @@
+diff -u --new-file --recursive linux-229/CREDITS linux-229-changer/CREDITS
+--- linux-229/CREDITS	Tue May 11 18:57:14 1999
++++ linux-229-changer/CREDITS	Wed May 19 00:25:31 1999
+@@ -1292,6 +1292,17 @@
  D: XF86_8514
  D: cfdisk (curses based disk partitioning program)
  
@@ -19,10 +19,10 @@ diff -u --new-file --recursive linux.vanilla.226ac2/CREDITS linux.changer.226ac2
  N: Mike McLagan
  E: mike.mclagan@linux.org
  W: http://www.invlogic.com/~mmclagan
-diff -u --new-file --recursive linux.vanilla.226ac2/Documentation/Configure.help linux.changer.226ac2/Documentation/Configure.help
---- linux.vanilla.226ac2/Documentation/Configure.help	Thu Apr 29 11:13:13 1999
-+++ linux.changer.226ac2/Documentation/Configure.help	Thu Apr 29 10:21:05 1999
-@@ -234,6 +234,20 @@
+diff -u --new-file --recursive linux-229/Documentation/Configure.help linux-229-changer/Documentation/Configure.help
+--- linux-229/Documentation/Configure.help	Tue May 11 18:57:14 1999
++++ linux-229-changer/Documentation/Configure.help	Wed May 19 00:25:31 1999
+@@ -259,6 +259,20 @@
  
    Most users will answer N here.
  
@@ -43,9 +43,9 @@ diff -u --new-file --recursive linux.vanilla.226ac2/Documentation/Configure.help
  Network Block Device support
  CONFIG_BLK_DEV_NBD
    Saying Y here will allow your computer to be a client for network
-diff -u --new-file --recursive linux.vanilla.226ac2/MAINTAINERS linux.changer.226ac2/MAINTAINERS
---- linux.vanilla.226ac2/MAINTAINERS	Thu Apr 29 11:13:13 1999
-+++ linux.changer.226ac2/MAINTAINERS	Thu Apr 29 10:21:05 1999
+diff -u --new-file --recursive linux-229/MAINTAINERS linux-229-changer/MAINTAINERS
+--- linux-229/MAINTAINERS	Sat May  8 21:49:46 1999
++++ linux-229-changer/MAINTAINERS	Wed May 19 00:25:31 1999
 @@ -220,6 +220,13 @@
  L:	netdev@roxanne.nuclecu.unam.mx
  S:	Maintained
@@ -60,22 +60,22 @@ diff -u --new-file --recursive linux.vanilla.226ac2/MAINTAINERS linux.changer.22
  DEVICE NUMBER REGISTRY
  P:	H. Peter Anvin
  M:	hpa@zytor.com
-diff -u --new-file --recursive linux.vanilla.226ac2/Makefile linux.changer.226ac2/Makefile
---- linux.vanilla.226ac2/Makefile	Thu Apr 29 11:13:13 1999
-+++ linux.changer.226ac2/Makefile	Thu Apr 29 10:21:28 1999
+diff -u --new-file --recursive linux-229/Makefile linux-229-changer/Makefile
+--- linux-229/Makefile	Wed May 19 02:09:22 1999
++++ linux-229-changer/Makefile	Wed May 19 00:26:00 1999
 @@ -1,7 +1,7 @@
  VERSION = 2
  PATCHLEVEL = 2
- SUBLEVEL = 6
--EXTRAVERSION = -ac2
-+EXTRAVERSION = -ac2-changer
+ SUBLEVEL = 9
+-EXTRAVERSION =
++EXTRAVERSION = -changer
  
  ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
  
-diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/Config.in linux.changer.226ac2/drivers/block/Config.in
---- linux.vanilla.226ac2/drivers/block/Config.in	Tue Dec 29 20:21:49 1998
-+++ linux.changer.226ac2/drivers/block/Config.in	Thu Apr 29 10:21:05 1999
-@@ -94,6 +94,7 @@
+diff -u --new-file --recursive linux-229/drivers/block/Config.in linux-229-changer/drivers/block/Config.in
+--- linux-229/drivers/block/Config.in	Thu Apr 29 21:53:48 1999
++++ linux-229-changer/drivers/block/Config.in	Wed May 19 00:25:31 1999
+@@ -96,6 +96,7 @@
  comment 'Additional Block Devices'
  
  tristate 'Loopback device support' CONFIG_BLK_DEV_LOOP
@@ -83,9 +83,9 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/Config.in linu
  if [ "$CONFIG_NET" = "y" ]; then
    tristate 'Network block device support' CONFIG_BLK_DEV_NBD
  fi
-diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/Makefile linux.changer.226ac2/drivers/block/Makefile
---- linux.vanilla.226ac2/drivers/block/Makefile	Tue Apr 13 01:18:27 1999
-+++ linux.changer.226ac2/drivers/block/Makefile	Thu Apr 29 10:21:05 1999
+diff -u --new-file --recursive linux-229/drivers/block/Makefile linux-229-changer/drivers/block/Makefile
+--- linux-229/drivers/block/Makefile	Tue Apr 13 01:18:27 1999
++++ linux-229-changer/drivers/block/Makefile	Wed May 19 00:25:31 1999
 @@ -94,6 +94,14 @@
    endif
  endif
@@ -101,10 +101,10 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/Makefile linux
  ifeq ($(CONFIG_BLK_DEV_HD),y)
  L_OBJS += hd.o
  endif
-diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linux.changer.226ac2/drivers/block/changer.c
---- linux.vanilla.226ac2/drivers/block/changer.c	Thu Jan  1 01:00:00 1970
-+++ linux.changer.226ac2/drivers/block/changer.c	Thu Apr 29 11:11:01 1999
-@@ -0,0 +1,1205 @@
+diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-changer/drivers/block/changer.c
+--- linux-229/drivers/block/changer.c	Thu Jan  1 01:00:00 1970
++++ linux-229-changer/drivers/block/changer.c	Wed May 19 01:31:33 1999
+@@ -0,0 +1,1305 @@
 +/**********************************************************************************************************************
 +  /dev/changer by Jeroen Massar aka fuzzel/unfix <jmassar@unfix.org>               http://unfix.org/projects/changer
 +***********************************************************************************************************************
@@ -137,8 +137,7 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 + Future Features (things on my mind)
 +	- Samba Config Editing (create cd-entries from the names on the cd's).
 +	  Should be done in userspace with some kind of callback using cdrom stuff.
-+	- Precaching? Or should this be set somewhere else??
-+	- mail jmassar@unfix.org if you got any ideas :)
++	- mail changer@medusa.unfix.org if you got any ideas :)
 +
 + Parameters
 + 	- BOOL	noauto		- Disable auto-changer-detection.
@@ -164,13 +163,13 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +		2807 EJ Gouda
 +		The Netherlands
 +
-+	I'll scan in all the cards I receive and put them onto the projects page too :)
++	I'll scan in all the cards I receive and put them onto the projects page :)
 +
 + Acknowledgements
 +	A lot of info on how to actually implement it came from md (the multiple-disk driver),
 +	nbd (the network block driver) and the loop device, all of which use sub/child-devices.
 +	I'd also like to thank the following persons:
-+		Linus Torvalds
++		Linus Torvalds, Alan Cox, et al
 +			- for making Linux in the first place :)
 +		Marc Zyngier
 +			- for making the md driver which I learned this code from
@@ -192,9 +191,9 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +		#linux.nl
 +			- for the general laughter...
 +		Thomas E. Dodd
-+			- for the wrapper_open fix.
++			- for the silly wrapper_open fix.
 +
-+ History (child=underlying lowleveldriver)
++ Detailed History (child=underlying lowleveldriver)
 +	20 November 1998
 +		- I bought a Teac CD-C68E 6-cd changer, though ATAPI for 200 guilders I couldn't
 +		  go wrong and I didn't, it's great, I've simply put all my so-much-needed cd's
@@ -257,7 +256,7 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +		  1024 sectors of the cd, now it can be anywhere...
 +		- Redesigned website to conform to new unfix.org style.
 +		- Included it in such a way that it is kernel-tree ready, and people can compile and test it.
-+	19 March 1999
++	19 March 1999 
 +		- Added the following things to ll_rw_block.c, which avoid some nasty deadlocks:
 +			- Available/Get/Free Request, divides total left by two so the device can use the other.
 +			- "Plugging without Deadlocking".
@@ -294,20 +293,40 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +	29 April 1999 (RELEASED (bz2+tgz) beta 3)
 +		- All INFO messages are now defined at one place, avoiding duplicates.
 +		  This way every text can be customized.
-+		- Tested on 2.2.6-ac2-changer.
++		- Tested as 2.2.6-ac2-changer.
++	== Koninginnedag/Queensday (31 April) ==
++	01 May 1999
++		- Cleaned up some code.
++		- All functions now use bdevname() instead of kdevname().
++	02 May 1999
++		- Fixed changer_majors spinlock initialization.
++		  I'll probably have to check everywhere wether the major is in bound with that
++		  structure... rather strange that it didn't go wrong before...
++		- Added CHANGER_SET_LEVEL for setting the output levels runtime.
++		- Added CHANGER_GET for querying which device:slot is connected to what changer.
++		  Actually the reverse of CHANGER_SET...
++		- The changer_set structure now also contains a size field.
++		- The changer_set version is now independent of the /dev/changer version.
++		- Created a small tool (changertool) for using the ioctl's.
++	19 May 1999 (RELEASED (bz2+tgz) beta 4)
++		- Fixed some problem with the spinlocks not compiling because
++		  of changed semantics in the 2.2.8+ and gcc bitching about it...
++		- Tested as 2.2.9-changer.
 +
 +Status: (BETA HACK)
 +	It works quite well (IMO), but it should be seen as a big hack, even though that the whole of
 +	linux could be called a big hack... but it's a hack that works.
 +	Currently it does what it is required todo.. but you don't want to know how and why :)
 +	Especially as it doesn't actually open the device...
-+	Why I say it works:
++
++   Why I say it works:
 +	I've already upgraded heaven's Debian install from Hamm to Slink, by using the two cd's
 +	in my Teac changer and using an apt filepath pointing to the /dev/changer mounted cd's,
 +	and as I can still type this it like still works :)
 +
 +Notes:
 +	- drive_status & media_changed also pass along a slot number... does it have to be changed first then?
++	- what do the get_fs()/set_fs() do?
 +
 +Todo's
 +	( '-' = subject, '=' = status)
@@ -320,19 +339,22 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +	  so when one request requires a slot and another requires another the changer will keep changing
 +	  between them... I've got a choice of a couple of methods to solve this:
 +		1) Don't change in less then n seconds (handling only requests on that slot).
-+		2) Alan Cox said that I could put every slot per 1Gb and that the kernel would reorder it.
-+		3) Command queue-ing & reordering (this should be an addition to ll_rw_block.c)
++		2) Alan Cox told me that I could put every slot per 1Gb and that the kernel would reorder it.
++		3) Command queue-ing & reordering (this could be an addition to ll_rw_block.c)
 +			Just like my Atlas3... reorder commands so it's easier to get the data and thus speeding the process up.
 +	  I'll firstly implement method 1, then I'll implement method 3 which would also be a great improvement for other
 +	  drivers which could get a great improvement as they get semi-sequential requests. It should be able to disable it
 +	  for seperate drives, especially for drives like the Atlas3 and alike which do it much better in hardware.
-+	- CHANGER_GET IOCTL for checking which changer:minor & name is connected to what device?
-+	- CHANGER_SET_LEVEL IOCTL for runtime setting output-levels.
++	
 +	- ** CLEANUP THE CODE...
 +	  = It's quite clean but it can be much cleaner and "nicer".
-+	- Optimize where possible, as it seems much slower than direct drive mode.
++	  = Some people want it to be in K&R style, but running an `ident -kr -i8` over it actually makes the source
++		 longer, I actually do catch else's.... IMHO my code is quite cleanly written if you can point me out
++		 otherwise do so but do it with actual arguments, I certainly don't use goto's...
++	- Optimize where possible, as it seems somewhat slower than direct drive mode.
 +	  - Use bigger blocksizes where possible?
-+	  - Remove paranoia checks?
++	- Add/Remove paranoia checks?
++		- Checks for non-existing ioctls.
 +	- Parameter handling.
 +	- SysCtl Interface (cdrom_sysctl_register() and friends)
 +		- a `cat /proc/sys/dev/changer` would show mappings eg:
@@ -345,12 +367,12 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +
 + Bugs:
 +	- see the ToDo list.
-+	- If you've got/found any new problems/bugs/suggestions then `vi messy;cat messy|mail jmassar@unfix.org`.
++	- If you've got/found any new problems/bugs/suggestions then `vi messy;cat messy|mail changer@medusa.unfix.org`.
 +
 + Other Notes:
 +	- This driver obviously doesn't have the CDC_SELECT_DISC capability... <grin>
 +
-+*** Personal Mental Notes **********************************************************************************************
++*** Mental Notes *******************************************************************************************************
 +#define you the_one_reading_this()
 +#define me	"Jeroen Massar"
 +if (you==me)
@@ -389,15 +411,17 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +/**********************************************************************************************************************
 +  Global Static Definitions
 +**********************************************************************************************************************/
-+#include <changer.h>
++#include <linux/changer.h>
 +
 +const char c_full[]	= CHANGER_FULL;
 +const char c_short[]	= CHANGER_SHORT;
 +const char c_date[]	= CHANGER_DATE;
 +const char c_by[]		= CHANGER_AUTHOR;
 +const char c_www[]	= CHANGER_WWW;
++const char c_list[]	= CHANGER_LIST;
 +
 +/* I'll use 42 as a testing major number (see major.h and blk.h). */
++/* This is correct per Documention/Devices.txt, I'll request a real one shortly.. */
 +#define MAJOR_NR CHANGER_MAJOR
 +
 +/**********************************************************************************************************************
@@ -451,15 +475,6 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +#include <asm/io.h>
 +#include <asm/uaccess.h>
 +
-+#define LEVEL_NONE	0x0		/* None. */
-+#define LEVEL_DEBUG	0x1		/* Debug Message. */
-+#define LEVEL_FUNC	0x2		/* Function start/end. */
-+#define LEVEL_XS		0x4		/* Access Messages (read/write functions). */
-+#define LEVEL_INFO	0x8		/* Informational Messages. */
-+#define LEVEL_ERR		0x16		/* Critical errors. */
-+#define LEVEL_WARN	0x32		/* Warnings. */
-+#define LEVEL_ANY		-1			/* All of the above. */
-+
 +/* Enable Debug Ability 1=On, else Off. */
 +/* When off then it won't include any of the debug code nor
 +   any of the associated stuff like strings... */
@@ -469,22 +484,26 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +const char Msg_Minor[]			= "%s: %s(): Minor %d is out of range.\n";
 +const char Msg_NoSelect[]		= "%s: %s(): Device %s doesn't support select_disc... is this really a changer?\n";
 +const char Msg_RegFail[]		= "%s: %s(): Cannot become a registered cdrom on device %s (register_cdrom() returned %d)\n";
-+const char Msg_NoOPS[]			= "%s: %s(): Couldn't get cdi or cdi->ops is empty...\n";
++const char Msg_NoOPS[]			= "%s: %s(): Couldn't get cdi or cdi->ops is unset...\n";
 +const char Msg_OpenFail[]		= "%s: %s(): Couldn't open the device %s...\n";
-+const char Msg_NoSlot[]			= "%s: %s(): Couldn't select slot on device %s.\n";
++const char Msg_NoSlot[]			= "%s: %s(): Couldn't select slot %d on device %s.\n";
 +const char Msg_Set[]				= "%s: %s(): Setting minor=%02x device %s slot %d...\n";
 +const char Msg_UnSet[]			= "%s: %s(): UN-Setting minor=%02x device %s slot %d...\n";
++const char Msg_UnSetUsed[]		= "%s: %s(): Couldn' unset minor=%02x device %s slot %d cause opencount=%d...\n";
 +const char Msg_AddSelf[]		= "%s: %s(): Hmmmm eehmmm someone/thing tried to add myself to myself... wellps... that's a no go...\n";
 +const char Msg_What[]			= "%s: %s(): Hi I speak version %d and NOT version %d, which you passed me, so go update your usertools!\n";
++const char Msg_What2[]			= "%s: %s(): It's the correct version but not the correct size which should've been %d, but it is %d...\n";
 +const char Msg_BuffUpd[]		= "%s: %s(): Unable to update buffers...\n";
 +const char Msg_GetBlk[]			= "%s: %s(): Device %s: getblk(-, %d, %d) returned NULL\n";
 +const char Msg_ChildNotUsed[]	= "%s: %s(): Child %02x is unused...\n";
 +const char Msg_ReqNotMine[]	= "%s: %s(): Got a request for %s which is Not one of me...\n";
-+const char Msg_Header[]			= "%s: %s (%s)\nby %s\n%s\n";
++const char Msg_Header1[]		= "%s: %s (%s) by %s\n";
++const char Msg_Header2[]		= "%s: %s, %s\n";
 +const char Msg_FakeFail[]		= "%s: %s(): Couldn't add a temp. fake device, use the userland program to add changers (register_cdrom()=%d)\n";
 +const char Msg_MajorRegFail[]	= "%s: %s(): Unable to register major %02x! (register_blkdev() returned %d)\n";
 +const char Msg_InitOk[]			= "%s: Initialized Ok...\n";
 +const char Msg_ModuleFreed[]	= "%s: %s(): Module freed... Have a pleasant day.\n";
++const char Msg_Level[]			= "%s: %s(): Setting information level to %x.\n";
 +
 +/**********************************************************************************************************************
 +  Macros
@@ -499,9 +518,9 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +#define CHG								changer_devs[minor]
 +#define CAP(func,cap)				if (o_cdi->ops->func==NULL) CHG.cdi.mask&=~(cap)
 +#define ISCAP(cap)					(CHG.cdi.mask|cap)
-+#define DEVICE_LOCK()				spin_lock(changer_majors[MAJOR(CHG.dev)].spinlock)
-+#define DEVICE_UNLOCK()				spin_unlock(changer_majors[MAJOR(CHG.dev)].spinlock)
-+#define DEVICE_TRY_LOCK()			spin_trylock(changer_majors[MAJOR(CHG.dev)].spinlock)
++#define DEVICE_LOCK()				spin_lock(&changer_majors[MAJOR(CHG.dev)].spinlock)
++#define DEVICE_UNLOCK()				spin_unlock(&changer_majors[MAJOR(CHG.dev)].spinlock)
++#define DEVICE_TRY_LOCK()			spin_trylock(&changer_majors[MAJOR(CHG.dev)].spinlock)
 +#define GLOBAL_R_LOCK()				read_lock(&global_lock)
 +#define GLOBAL_W_LOCK()				write_lock(&global_lock)
 +#define GLOBAL_R_UNLOCK()			read_unlock(&global_lock)
@@ -582,12 +601,12 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +					invalidate_buffers(CHG.dev);
 +					result=1;
 +				}
-+				else INFO(LEVEL_ERR,Msg_NoSlot,"changer_change_slot",kdevname(CHG.dev));
++				else INFO(LEVEL_ERR,Msg_NoSlot,"changer_change_slot",CHG.slot,bdevname(CHG.dev));
 +			}
 +			else result=1;
 +		}
 +		/* Should never happen, as it gets checked in changer_set() */
-+		else INFO(LEVEL_ERR,Msg_NoSelect,"changer_change_slot",kdevname(CHG.dev));
++		else INFO(LEVEL_ERR,Msg_NoSelect,"changer_change_slot",bdevname(CHG.dev));
 +	}
 +	/* This should never happen as it should have been checked by the code calling this function. */
 +	else INFO(LEVEL_ERR,Msg_Minor,"changer_change_slot",minor);
@@ -605,37 +624,46 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +	/* We want to be sure of this. */
 +	if (minor<CHANGER_MAX_MINOR)
 +	{
-+		/* if set is supplied it must be my version, no set is ok too... */
-+		if (((set)&&(set->version==CHANGER_VERSION))||(set==NULL))
++		/* if set is supplied it must be my version and the correct size, no set is ok too... */
++		if (((set)&&(set->version==CHANGER_VERSION_SET)&&(sizeof(struct changer_set)==set->size))||(set==NULL))
 +		{
 +			/* Was it used before? */
 +			if (CHG.dev!=NODEV)
 +			{
-+				/* Let's close it */
-+				maj=MAJOR(CHG.dev);
-+				min=MINOR(CHG.dev);
-+				INFO(LEVEL_INFO,Msg_UnSet,"changer_set",minor,kdevname(CHG.dev),CHG.slot);
-+				/* Close/Release the device when opencount reaches 0. */
-+				if (changer_majors[maj].opencount==0)
++				if (CHG.opencount==0)
 +				{
-+					DEBUG(LEVEL_INFO,"changer_set(): Closing device %s...(opencount==0)\n",kdevname(CHG.dev));
-+					changer_wrap_release(changer_majors[MINOR(CHG.dev)].cdi);
++					/* Let's close it */
++					maj=MAJOR(CHG.dev);
++					min=MINOR(CHG.dev);
++					INFO(LEVEL_INFO,Msg_UnSet,"changer_set",minor,bdevname(CHG.dev),CHG.slot);
++					/* Close/Release the device when opencount reaches 0. */
++					if (changer_majors[maj].opencount==0)
++					{
++						DEBUG(LEVEL_INFO,"changer_set(): Closing device %s...(opencount==0)\n",bdevname(CHG.dev));
++						changer_wrap_release(changer_majors[MINOR(CHG.dev)].cdi);
++					}
++					/* Unregister MAJOR_NR,minor as cdrom. */
++					unregister_cdrom(&CHG.cdi);
++					changer_majors[maj].minor[min]=NODEV;
++					changer_majors[maj].opencount--;
++					CHG.dev=NODEV;
++					result=0;
 +				}
-+				/* Unregister MAJOR_NR,minor as cdrom. */
-+				unregister_cdrom(&CHG.cdi);
-+				changer_majors[maj].minor[min]=NODEV;
-+				changer_majors[maj].opencount--;
-+				result=0;
++				else
++				{
++					INFO(LEVEL_INFO,Msg_UnSetUsed,"changer_set",minor,bdevname(CHG.dev),CHG.slot,CHG.opencount);
++					result=-EALREADY;
++				}
 +			}
-+			if (set)
++			if ((CHG.dev==NODEV)&&(set))
 +			{
 +				result=-EINVAL;
-+				maj=MAJOR(set->dev);
++				maj=set->major;
 +				if (maj!=MAJOR_NR)
 +				{
-+					min=MINOR(set->dev);
++					min=set->minor;
 +					/* Copy attributes / Adapt Settings. */
-+					CHG.dev=set->dev;
++					CHG.dev=MKDEV(set->major,set->minor);
 +					CHG.opencount=0;
 +					CHG.slot=set->slot;
 +					o_cdi=cdi;
@@ -671,7 +699,7 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +						/* Check if it really can select discs... */
 +						if (ISCAP(CDC_SELECT_DISC))
 +						{
-+							strncpy(CHG.cdi.name,set->name,(20-1));
++							strncpy(CHG.cdi.name,set->name,(CHANGER_NAME_LEN-1));
 +							/* Open the child device. */
 +							if (((changer_majors[maj].opencount)>0)||
 +									(((changer_majors[maj].opencount)==0)&&(result=changer_wrap_open(cdi)==0)))
@@ -682,12 +710,12 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +								if ((ret=register_cdrom(&CHG.cdi))==0)
 +								{
 +									result=0;
-+									INFO(LEVEL_INFO,Msg_Set,"changer_set",minor,kdevname(CHG.dev),set->slot);
++									INFO(LEVEL_INFO,Msg_Set,"changer_set",minor,bdevname(CHG.dev),set->slot);
 +									blk_size[MAJOR_NR][minor]=blk_size[MAJOR(CHG.dev)][MINOR(CHG.dev)];
 +								}
 +								else
 +								{
-+									INFO(LEVEL_ERR,Msg_RegFail,"changer_set",kdevname(CHG.cdi.dev),ret);
++									INFO(LEVEL_ERR,Msg_RegFail,"changer_set",bdevname(CHG.cdi.dev),ret);
 +									unregister_cdrom(&CHG.cdi);
 +									CHG.dev=NODEV;
 +									result=-EIO;
@@ -695,14 +723,14 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +							}
 +							else
 +							{
-+								INFO(LEVEL_ERR,Msg_OpenFail,"changer_set",kdevname(set->dev));
++								INFO(LEVEL_ERR,Msg_OpenFail,"changer_set",bdevname(MKDEV(set->major,set->major)));
 +								CHG.dev=NODEV;
 +								result=-EINVAL;
 +							}
 +						}
 +						else
 +						{
-+							INFO(LEVEL_ERR,Msg_NoSelect,"changer_set",kdevname(set->dev));
++							INFO(LEVEL_ERR,Msg_NoSelect,"changer_set",bdevname(MKDEV(set->major,set->major)));
 +							result=-EINVAL;
 +						}
 +					}
@@ -723,7 +751,8 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +		}
 +		else
 +		{
-+			INFO(LEVEL_ERR,Msg_What,"changer_set",CHANGER_VERSION,set->version);
++			if (set->version!=CHANGER_VERSION_SET) INFO(LEVEL_ERR,Msg_What,"changer_set",CHANGER_VERSION_SET,set->version);
++			else INFO(LEVEL_ERR,Msg_What2,"changer_set",sizeof(set),set->size);
 +			result=-EINVAL;
 +		}
 +	}
@@ -734,25 +763,44 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +
 +/**********************************************************************************************************************
 +  The actual wrapper functions.
-+***********************************************************************************************************************
-+  Make from cdi the struct inode *ip and struct file *fp for the IOCTL call.
 +**********************************************************************************************************************/
 +/* Simply gets the kdev_t from the child-table and sets the flag. */
 +/* TODO: ACTUALLY OPEN THE DEVICE, this is not done yet... <grin> */
 +/* note: called with global write lock acquired */
 +static int changer_wrap_open(struct cdrom_device_info *cdi)
 +{
-+	int				minor=MINOR(cdi->dev);
-+	struct inode	ip;
-+	struct file		fp;
++	int				minor=MINOR(cdi->dev),ret=-EIO;
 +
 +	DEBUG(LEVEL_FUNC,"changer_wrap_open()\n");
-+	memset(&ip,0,sizeof(ip));
-+	memset(&fp,0,sizeof(fp));
-+	blk_size[MAJOR_NR][minor]=blk_size[MAJOR(CHG.dev)][MINOR(CHG.dev)];
-+	ip.i_rdev=CHG.dev;
-+	fp.f_flags=O_NONBLOCK;
-+	return(cdrom_fops.open(&ip,&fp));
++	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
++	{
++		blk_size[MAJOR_NR][minor]=blk_size[MAJOR(CHG.dev)][MINOR(CHG.dev)];
++
++		changer_majors[MAJOR(CHG.dev)].file=get_empty_filp();
++		if (changer_majors[MAJOR(CHG.dev)].file)
++		{
++			memset(&changer_majors[MAJOR(CHG.dev)].inode,0,sizeof(changer_majors[MAJOR(CHG.dev)].inode));
++			memset(&changer_majors[MAJOR(CHG.dev)].dentry,0,sizeof(changer_majors[MAJOR(CHG.dev)].dentry));
++			changer_majors[MAJOR(CHG.dev)].inode.i_rdev=CHG.dev;
++			changer_majors[MAJOR(CHG.dev)].file->f_mode=1;	/* read only */
++			changer_majors[MAJOR(CHG.dev)].file->f_dentry=&changer_majors[MAJOR(CHG.dev)].dentry;
++			changer_majors[MAJOR(CHG.dev)].file->f_flags=O_NONBLOCK;
++			changer_majors[MAJOR(CHG.dev)].dentry.d_inode=&changer_majors[MAJOR(CHG.dev)].inode;
++			/* Adds support for dynamic module loading */
++			ret=blkdev_open(&changer_majors[MAJOR(CHG.dev)].inode,changer_majors[MAJOR(CHG.dev)].file);
++			if (!ret)
++			{
++				/*
++				check_disk_change(CHG.dev);
++				set_device_ro(CHG.dev,1);
++				*/
++			}
++			else put_filp(changer_majors[MAJOR(CHG.dev)].file);
++		}
++		else ret=-ENFILE;
++	}
++	else INFO(LEVEL_ERR,Msg_Minor,"changer_wrap_open",minor);
++	return(ret);
 +}
 +
 +/* Simply gets the kdev_t from the child-table, sets the flag and closes it. */
@@ -761,18 +809,14 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +static void changer_wrap_release(struct cdrom_device_info *cdi)
 +{
 +	int				minor=MINOR(cdi->dev);
-+	struct inode	ip;
-+	struct file		fp;
 +
 +	DEBUG(LEVEL_FUNC,"changer_wrap_release()\n");
 +	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 +	{
-+		memset(&ip,0,sizeof(ip));
-+		memset(&fp,0,sizeof(fp));
-+		ip.i_rdev=CHG.dev;
-+		fp.f_flags=O_NONBLOCK;
-+		fp.f_mode=0;
-+		cdrom_fops.release(&ip,&fp);
++		blkdev_release(changer_majors[MAJOR(CHG.dev)].file->f_dentry->d_inode);
++		dput(changer_majors[MAJOR(CHG.dev)].file->f_dentry);
++		put_filp(changer_majors[MAJOR(CHG.dev)].file);
++		invalidate_buffers(CHG.dev);
 +	}
 +	else INFO(LEVEL_ERR,Msg_Minor,"changer_wrap_release",minor);
 +}
@@ -823,7 +867,7 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +			/* Is it a used minor? */
 +			if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 +			{
-+				DEBUG(LEVEL_FUNC,"changer_request(): The request is for minor %02x child device %s.\n",minor,kdevname(CHG.dev));
++				DEBUG(LEVEL_FUNC,"changer_request(): The request is for minor %02x child device %s.\n",minor,bdevname(CHG.dev));
 +
 +				/* Calculate block sizes. */
 +				blksize=BLOCK_SIZE;
@@ -886,7 +930,7 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +							}
 +							else
 +							{
-+								INFO(LEVEL_ERR,Msg_GetBlk,"changer_request",kdevname(CHG.dev),block,blksize);
++								INFO(LEVEL_ERR,Msg_GetBlk,"changer_request",bdevname(CHG.dev),block,blksize);
 +								ok=0;
 +							}
 +							dest+=size;
@@ -954,10 +998,11 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +{
 +	int minor=0,result=0,ret,slot,i;
 +	struct cdrom_device_info fake_cdi = {&changer_dops,0,0,0,0,0,0,0,0,0,"ChangerFake"},*cdi;
-+	struct changer_set set = {CHANGER_VERSION,0,0,""};
++	struct changer_set set = {CHANGER_VERSION_SET,sizeof(struct changer_set),0,0,0,""};
 +
 +	DEBUG(LEVEL_FUNC,"changer_init()\n");
-+	INFO(LEVEL_ANY,Msg_Header,c_full,c_date,c_by,c_www);
++	INFO(LEVEL_ANY,Msg_Header1,c_full,c_date,c_by);
++	INFO(LEVEL_ANY,Msg_Header2,c_www,c_list);
 +
 +	/* Initialize data parts. */
 +	memset(&changer_devs,0,sizeof(changer_devs));
@@ -965,23 +1010,31 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +	memset(&changer_blksizes,0,sizeof(changer_blksizes));
 +	memset(&changer_majors,0,sizeof(changer_majors));
 +
++	DEBUG(LEVEL_INFO,"Initializing spinlocks...\n");
++
 +	/* Initialize all the device spinlocks. */
-+	for (i=0;i<CHANGER_MAX_MINOR;i++) changer_majors[i].spinlock=SPIN_LOCK_UNLOCKED;
++	for (i=0;i<MAX_BLKDEV;i++) changer_majors[i].spinlock=SPIN_LOCK_UNLOCKED;
 +	/* Initialize global spinlock. */
 +	global_lock=RW_LOCK_UNLOCKED;
 +
-+	if ((ret=register_blkdev(MAJOR_NR,c_short,&cdrom_fops))==0)
++	DEBUG(LEVEL_INFO,"Registering the block device...\n");
++
++	if (!(ret=register_blkdev(MAJOR_NR,c_short,&cdrom_fops)))
 +	{
++		/* The settings below are really splattered
++			around the kernel, wouldn't it be nicer to have
++			them in one struct? */
 +		blk_dev[MAJOR_NR].request_fn=DEVICE_REQUEST;
 +		blk_dev[MAJOR_NR].current_request=NULL;
 +		blk_size[MAJOR_NR]=changer_sizes;
 +		blksize_size[MAJOR_NR]=changer_blksizes;
 +		read_ahead[MAJOR_NR]=INT_MAX;
 +		
++		DEBUG(LEVEL_INFO,"Going for the registration of the fake device...\n");
++
 +		/* Trick Time */
 +		/* Temporary add a fake cdrom drive. */
 +		/* Simply to get the cdi list entries. */
-+		/* Is there a "nicer" way to do this? */
 +		fake_cdi.dev=MKDEV(MAJOR_NR,CHANGER_MAX_MINOR-1);
 +		if ((ret=register_cdrom(&fake_cdi))==0)
 +		{
@@ -991,15 +1044,16 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +			{
 +				if (cdi->capacity>1)
 +				{
-+					set.dev=cdi->dev;
++					set.major=MAJOR(cdi->dev);
++					set.minor=MINOR(cdi->dev);
 +					for (slot=0;slot<cdi->capacity;slot++)
 +					{
 +						set.slot=slot;
-+						/* WARNING: Length limits!!! It's overflowable this way! */
++						/* WARNING: Length limits, it's overflowable currently with large numbers. */
 +						sprintf(set.name,CHANGER_DEVNAME"%d",minor);
 +						fake_cdi.dev=MKDEV(MAJOR_NR,minor);
 +						/* Add cdrom device. */
-+						DEBUG(LEVEL_INFO,"Adding minor=%02x device %s slot %d...\n",minor,kdevname(set.dev),slot);
++						DEBUG(LEVEL_INFO,"Adding minor=%02x device %s slot %d...\n",minor,bdevname(MKDEV(set.major,set.minor)),slot);
 +						if (changer_set(&fake_cdi,&set)==0) minor++;
 +						/* else failed... */
 +					}
@@ -1037,12 +1091,14 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +{
 +	int minor=MINOR(cdi->dev),result=0;
 +	DEBUG(LEVEL_FUNC,"changer_open(%02x:purpose=%d)\n",minor,purpose);
-+	/* Open actual driver is done on CHANGER_SET(). */
++	/* Open actual driver is done on changer_set(). */
 +	GLOBAL_R_LOCK();
 +	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 +	{
 +		CHG.opencount++;
++#ifdef MODULE
 +		MOD_INC_USE_COUNT;
++#endif
 +	}
 +	else result=-EINVAL;
 +	GLOBAL_R_UNLOCK();
@@ -1054,11 +1110,13 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +{
 +	int minor=MINOR(cdi->dev);
 +	DEBUG(LEVEL_FUNC,"changer_release(%02x)\n",minor);
-+	/* Close actual driver is done on CHANGER_SET(NODEV). */
++	/* Close actual driver is done on changer_set(NODEV). */
 +	GLOBAL_R_LOCK();
 +	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 +	{
++#ifdef MODULE
 +		MOD_DEC_USE_COUNT;
++#endif
 +		CHG.opencount--;
 +	}
 +	GLOBAL_R_UNLOCK();
@@ -1275,6 +1333,48 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +								}
 +								else result=-EACCES;
 +								break;
++		case CHANGER_GET:
++								if	(minor<CHANGER_MAX_MINOR)
++								{
++									struct changer_set set;
++									if (copy_from_user(&set,(struct changer_set *)arg,sizeof(set))) result=-EFAULT;
++									else
++									{
++										if (set.version==CHANGER_VERSION_SET)
++										{
++											if (set.size==sizeof(set))
++											{
++												set.major=MAJOR(CHG.dev);
++												set.minor=MINOR(CHG.dev);
++												set.slot=CHG.slot;
++												strncpy(set.name,CHG.cdi.name,(CHANGER_NAME_LEN-1));
++												if (copy_to_user((struct changer_set *)arg,&set,sizeof(set))) result=-EFAULT;
++												else result=0;
++											}
++											else
++											{
++												INFO(LEVEL_ERR,Msg_What2,"changer_dev_ioctl:changer_get",sizeof(set),set.size);
++												result=-EINVAL;
++											}
++										}
++										else
++										{
++											INFO(LEVEL_ERR,Msg_What,"changer_dev_ioctl:changer_get",CHANGER_VERSION_SET,set.version);
++											result=-EINVAL;
++										}
++									}
++								}
++								else result=-EINVAL;
++								break;
++		case CHANGER_SET_LEVEL:
++								/* Let only root (or equivalent) do this function. */
++								if (capable(CAP_SYS_ADMIN))
++								{
++									INFO(LEVEL_ANY,Msg_Level,"changer_dev_ioctl:changer_set_level",arg);
++									changer_output_level=arg;
++								}
++								else result=-EACCES;
++								break;
 +		default:				if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 +								{
 +									GLOBAL_R_LOCK();
@@ -1310,9 +1410,9 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/changer.c linu
 +}
 +#endif MODULE
 +
-diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/ll_rw_blk.c linux.changer.226ac2/drivers/block/ll_rw_blk.c
---- linux.vanilla.226ac2/drivers/block/ll_rw_blk.c	Thu Apr 29 11:13:15 1999
-+++ linux.changer.226ac2/drivers/block/ll_rw_blk.c	Thu Apr 29 10:21:05 1999
+diff -u --new-file --recursive linux-229/drivers/block/ll_rw_blk.c linux-229-changer/drivers/block/ll_rw_blk.c
+--- linux-229/drivers/block/ll_rw_blk.c	Fri Mar 12 08:20:14 1999
++++ linux-229-changer/drivers/block/ll_rw_blk.c	Wed May 19 00:25:31 1999
 @@ -443,8 +443,9 @@
  
  /* look for a free request. */
@@ -1338,7 +1438,7 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/ll_rw_blk.c li
  			plug_device(blk_dev + major); /* is atomic */
  	} else switch (major) {
  	     case IDE0_MAJOR:	/* same as HD_MAJOR */
-@@ -829,6 +831,9 @@
+@@ -828,6 +830,9 @@
  #endif
  #ifdef CONFIG_BLK_DEV_NBD
  	nbd_init();
@@ -1348,9 +1448,9 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/block/ll_rw_blk.c li
  #endif
  	return 0;
  };
-diff -u --new-file --recursive linux.vanilla.226ac2/drivers/cdrom/Makefile linux.changer.226ac2/drivers/cdrom/Makefile
---- linux.vanilla.226ac2/drivers/cdrom/Makefile	Fri Aug 21 00:17:06 1998
-+++ linux.changer.226ac2/drivers/cdrom/Makefile	Thu Apr 29 10:21:05 1999
+diff -u --new-file --recursive linux-229/drivers/cdrom/Makefile linux-229-changer/drivers/cdrom/Makefile
+--- linux-229/drivers/cdrom/Makefile	Fri Aug 21 00:17:06 1998
++++ linux-229-changer/drivers/cdrom/Makefile	Wed May 19 00:25:31 1999
 @@ -24,6 +24,7 @@
  # Each configuration option enables a list of files.
  
@@ -1359,9 +1459,9 @@ diff -u --new-file --recursive linux.vanilla.226ac2/drivers/cdrom/Makefile linux
  obj-$(CONFIG_BLK_DEV_SR)	+=              cdrom.o
  obj-$(CONFIG_PARIDE_PCD)	+=		cdrom.o
  
-diff -u --new-file --recursive linux.vanilla.226ac2/include/linux/blk.h linux.changer.226ac2/include/linux/blk.h
---- linux.vanilla.226ac2/include/linux/blk.h	Thu Apr 29 11:13:25 1999
-+++ linux.changer.226ac2/include/linux/blk.h	Thu Apr 29 10:28:31 1999
+diff -u --new-file --recursive linux-229/include/linux/blk.h linux-229-changer/include/linux/blk.h
+--- linux-229/include/linux/blk.h	Tue May 11 19:36:25 1999
++++ linux-229-changer/include/linux/blk.h	Wed May 19 01:37:54 1999
 @@ -63,6 +63,7 @@
  extern int ez_init(void);
  extern int bpcd_init(void);
@@ -1370,7 +1470,7 @@ diff -u --new-file --recursive linux.vanilla.226ac2/include/linux/blk.h linux.ch
  
  extern void set_device_ro(kdev_t dev,int flag);
  void add_blkdev_randomness(int major);
-@@ -363,6 +364,14 @@
+@@ -354,6 +355,14 @@
  #define DEVICE_REQUEST do_nbd_request
  #define DEVICE_NR(device) (MINOR(device))
  #define DEVICE_ON(device) 
@@ -1384,11 +1484,11 @@ diff -u --new-file --recursive linux.vanilla.226ac2/include/linux/blk.h linux.ch
 +#define DEVICE_ON(device)
  #define DEVICE_OFF(device)
  
- #elif (MAJOR_NR == I2O_MAJOR)
-diff -u --new-file --recursive linux.vanilla.226ac2/include/linux/changer.h linux.changer.226ac2/include/linux/changer.h
---- linux.vanilla.226ac2/include/linux/changer.h	Thu Jan  1 01:00:00 1970
-+++ linux.changer.226ac2/include/linux/changer.h	Thu Apr 29 10:22:15 1999
-@@ -0,0 +1,70 @@
+ #endif /* MAJOR_NR == whatever */
+diff -u --new-file --recursive linux-229/include/linux/changer.h linux-229-changer/include/linux/changer.h
+--- linux-229/include/linux/changer.h	Thu Jan  1 01:00:00 1970
++++ linux-229-changer/include/linux/changer.h	Wed May 19 01:41:48 1999
+@@ -0,0 +1,95 @@
 +/**********************************************************************************************************************
 +  /dev/changer by Jeroen Massar aka fuzzel/unfix <jmassar@unfix.org>               http://unfix.org/projects/changer
 +***********************************************************************************************************************
@@ -1401,43 +1501,56 @@ diff -u --new-file --recursive linux.vanilla.226ac2/include/linux/changer.h linu
 +#include <linux/major.h>
 +#include <linux/ioctl.h>
 +#include <linux/types.h>
-+#include <linux/blkdev.h>
-+#include <linux/cdrom.h>
++#include <linux/kdev_t.h>
 +
-+#define CHANGER_SHORT	"changer"
-+#define CHANGER_AUTHOR	"Jeroen Massar <jmassar@unfix.org>"
-+#define CHANGER_FULL		"/dev/changer"
-+#define CHANGER_DATE		"29 April 1999"
-+#define CHANGER_VERSION	19990429
-+#define CHANGER_WWW		"http://unfix.org/projects/changer"
-+#define CHANGER_DEVNAME	"changer"
++#define CHANGER_SHORT			"changer"
++#define CHANGER_AUTHOR			"Jeroen Massar <jmassar@unfix.org>"
++#define CHANGER_FULL				"/dev/changer"
++#define CHANGER_WWW				"http://unfix.org/projects/changer"
++#define CHANGER_LIST				"changer@medusa.unfix.org"
++#define CHANGER_DATE				"19 May 1999"
++#define CHANGER_VERSION			19990519
++#define CHANGER_VERSION_SET	1
++
++#define CHANGER_DEVNAME	CHANGER_SHORT
 +
 +/* IOCTL */
-+#define CHANGER_SET	 		_IO(CHANGER_MAJOR,42)
++enum
++{
++	CHANGER_SET=_IO(CHANGER_MAJOR,42),
++	CHANGER_GET,
++	CHANGER_SET_LEVEL
++};
 +
 +/* Maximum of supported minor devices, thus the number of wrapped cd-slots. */
-+#define CHANGER_MAX_MINOR	256
++#define CHANGER_MAX_MINOR	256		/* Change this if you need more. */
 +#define CHANGER_NAME_LEN	20			/* Buffers can be overflowed so watch it. */
-+#define CHANGER_MAX_MINORS	256		/* Max minors */
 +
-+/* Struct for CHANGER_SET IOCTL. */
++/* Used with the CHANGER_SET/GET IOCTL
++   note that whenever (major==0&&minor==0&&slot==0&&name=="") that means the device is unused.
++	It is sufficient to check (major==0&&minor==0) for this case... */
 +struct changer_set
 +{
-+	int		version;						/* Version. */
-+	kdev_t	dev;							/* The device (major:minor). */
++	int		version;						/* Version (Should be CHANGER_VERSION_SET). */
++	int		size;							/* Structure size. */
++	int		major,minor;				/* The device (major:minor). */
 +	int		slot;							/* Slot on the device. */
 +	char		name[CHANGER_NAME_LEN];	/* The name the thing gets in /proc//sys/dev/cdrom/info. */
-+												/* eg. "/dev/changer5". */
++												/* eg. "changer5". */
 +};
 +
 +/* Stuff that only the kernel needs to know. */
 +#ifdef __KERNEL__
 +
++#include <linux/blkdev.h>
++#include <linux/cdrom.h>
++#include <linux/file.h>
 +#include <linux/mm.h>
 +#include <linux/fs.h>
 +#include <asm/semaphore.h>
 +
-+/* Struct for devices in the changer array. */
++/* Struct for devices in the changer array.
++   Represents a slot. */
 +struct changer_dev
 +{
 +	kdev_t							dev;								/* Device (child's maj:min). */
@@ -1451,17 +1564,29 @@ diff -u --new-file --recursive linux.vanilla.226ac2/include/linux/changer.h linu
 +struct changer_maj
 +{
 +	int								opencount;						/* How many slots I've opened on this device. */
-+	int								minor[CHANGER_MAX_MINORS];	/* Which slot is which of my minors? (for changer_devs[.?.]. */
++	int								minor[CHANGER_MAX_MINOR];	/* Which slot is which of my minors? (for changer_devs[.?.]. */
 +	spinlock_t						spinlock;						/* Spinlock holding off changing of a device. */
 +	struct cdrom_device_info	*cdi;								/* Cached pointer to the cdi. */
++	struct file						*file;							/* (Fake) file for this device. */
++	struct inode					inode;							/* Inode for the file. */
++	struct dentry					dentry;							/* Dentry for the file. */
 +};
++
++#define LEVEL_NONE	0x0		/* None. */
++#define LEVEL_DEBUG	0x1		/* Debug Message. */
++#define LEVEL_FUNC	0x2		/* Function start/end. */
++#define LEVEL_XS		0x4		/* Access Messages (read/write functions). */
++#define LEVEL_INFO	0x8		/* Informational Messages. */
++#define LEVEL_ERR		0x16		/* Critical errors. */
++#define LEVEL_WARN	0x32		/* Warnings. */
++#define LEVEL_ANY		-1			/* All of the above. */
 +
 +#endif __KERNEL__
 +#endif _CHANGER_H
 +
-diff -u --new-file --recursive linux.vanilla.226ac2/include/linux/major.h linux.changer.226ac2/include/linux/major.h
---- linux.vanilla.226ac2/include/linux/major.h	Thu Apr 29 11:13:25 1999
-+++ linux.changer.226ac2/include/linux/major.h	Thu Apr 29 10:21:05 1999
+diff -u --new-file --recursive linux-229/include/linux/major.h linux-229-changer/include/linux/major.h
+--- linux-229/include/linux/major.h	Wed Oct 14 20:43:14 1998
++++ linux-229-changer/include/linux/major.h	Wed May 19 00:25:31 1999
 @@ -72,6 +72,7 @@
  #define Z2RAM_MAJOR	37
  #define APBLOCK_MAJOR   38   /* AP1000 Block device */
@@ -1470,10 +1595,10 @@ diff -u --new-file --recursive linux.vanilla.226ac2/include/linux/major.h linux.
  #define NBD_MAJOR	43   /* Network block device	*/
  #define RISCOM8_NORMAL_MAJOR 48
  #define RISCOM8_CALLOUT_MAJOR 49
-diff -u --new-file --recursive linux.vanilla.226ac2/init/main.c linux.changer.226ac2/init/main.c
---- linux.vanilla.226ac2/init/main.c	Thu Apr 29 11:13:28 1999
-+++ linux.changer.226ac2/init/main.c	Thu Apr 29 10:21:05 1999
-@@ -340,6 +340,10 @@
+diff -u --new-file --recursive linux-229/init/main.c linux-229-changer/init/main.c
+--- linux-229/init/main.c	Tue May 11 18:57:14 1999
++++ linux-229-changer/init/main.c	Wed May 19 00:25:31 1999
+@@ -344,6 +344,10 @@
  extern void md_setup(char *str,int *ints) __init;
  #endif
  
@@ -1484,7 +1609,7 @@ diff -u --new-file --recursive linux.vanilla.226ac2/init/main.c linux.changer.22
  /*
   * Boot command-line arguments
   */
-@@ -854,6 +858,9 @@
+@@ -860,6 +864,9 @@
  #endif
  #ifdef CONFIG_LTPC
  	{ "ltpc=", ltpc_setup },
