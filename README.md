@@ -27,7 +27,7 @@ thus avoiding the hassle with scripts or other custom software.
 
 Status
 ======
-/dev/changer can now be considered to be at a stable level.
+The code for /dev/changer can now be considered to be at a stable level.
 
 Currently we only have the following problems:
 * It is a changer so you technically CAN'T access two slots at the same time.
