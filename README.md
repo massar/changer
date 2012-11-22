@@ -47,6 +47,7 @@ Using/Installing
 ================
 You'll have to apply the patch to your kernel, then enable either the module or include the driver
 into the kernel. eg:
+
     root@heaven:/usr/src/local/linux-2.2.4# patch -p1 <changer_19990429.diff
     root@heaven:/usr/src/local/linux-2.2.4# make xconfig
     root@heaven:/usr/src/local/linux-2.2.4# make-kpkg --revision=42:heaven.2.2.6 binary
@@ -68,9 +69,13 @@ eg:
     alias block-major-42 changer
 
 then you should create enough devices for the changer with:
+
     root@heaven:/dev# for i in `seq 255`; do mknod /dev/changer$i b 42 $i; mkdir /cdrom/$i; chown root:cdrom /dev/changer$i /cdrom/$i; done
+
 after you've done that you'll have to mount the slots, just like an ordinary cdrom, eg:
+
     root@heaven:# mount /dev/changer4 /cdrom/4 -t iso9660
+
 you can ofcourse put these into the /etc/fstab.
 
 If you still got any questions do a: `vi question; cat question | mail jeroen@massar.ch`
