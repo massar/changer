@@ -121,17 +121,31 @@
 		  disc it senses it ok, also for other slots. So the IOCTL wrapper works. Now I'll
 		  have to work out the request.
 		- Fixed releasing of the child when I'd have no slots in use of the child.
+	== Didn't have the time to work on it... ==
 	16 March 1998
-		- Recoded the request part using a good look at the loop-driver.
+		- Coded the request part using a good look at the loop-driver.
 		- It starts to work much better now... as it actually reads data, at least
 		  I hear and see the cd change and then see a second or two of data transfer.
-		- 01:22 I can mount cd's! One problem... as the buffer's aren't invalidated all cd's seem
+		- 01:21 I can mount cd's! One problem... as the buffer's aren't invalidated all cd's seem
 		  the same to the system... I'll have to find out a way to invalidate them.
+	17 March 1998
+		- Implemented a spinlock for each child device. This should hold it from changing discs
+		  while a operation is in progress and then when another task gets scheduled.
+		- Added some documentation to clear up some of the weird things I did.
+		- 18:42 - IT WORKS!!!!! well except for slot 0 at my setup... hmmm... :)
+		  /me happy... it also works by listing to cd's at once eg: 'ls -la -R /cdrom/4' and list another
+		  on another tty and they will change every so often...
+
+Notes:
+	drive_status & media_changed also pass along a slot number... does it have to be changed first then
+	Andd eehmmm it doesn't lock the drive on mount... ("lock the changer.... didn't lock the changer").
 
 Todo
- 	- User space program.
+	- *Global* spinlock for the global lists (making it 100% multi-threaded(-kernel) safe).
+ 	- User space program for non-autodetected cdroms.
 	- CHANGER_GET IOCTL for checking which changer:minor & name is connected to what device?
-	- Log which devices are added as changers?
+	- Add procfs entries.
+
 	When it works:
 	- Make+Upload webpage + docs + source.
 	- Announce on comp.os.linux.announce and ask for comment etc.
@@ -169,10 +183,6 @@ Todo
 												- Added 'Plugging without Deadlocking' support	- see CHANGER_MAJOR
 	- Documentation/Configure.help	- Added help text.										- see CONFIG_CHANGER
 									
- Mindrumblings:
- 	Places where there are checks/hacks/etc.. for MD_:
- 		ll_rw_block				- Requests are diverted here!!! :)
-
  Extras:
 	/proc/sys/cdrom/info 	- For all the cdroms in a system (using cdrom-wrapper).
 	/proc/modules				- Modules info (see also mod* cmd's).
@@ -215,7 +225,7 @@ const char c_www[]	= CHANGER_WWW;
 static int changer_init(void);
 static void changer_cleanup(void);
 static struct cdrom_device_info *changer_get_cdi(struct cdrom_device_info *cdi);
-static int changer_change_slot(struct cdrom_device_info *cdi);
+static int changer_change_slot(int minor);
 static int changer_set(struct cdrom_device_info *cdi,struct changer_set *set);
 
 /* wraps */
@@ -264,10 +274,12 @@ static int changer_dev_ioctl(struct cdrom_device_info *cdi,unsigned int cmd,unsi
 /**********************************************************************************************************************
   Macros
 **********************************************************************************************************************/
-#define INFO(fmt, args...) printk(KERN_INFO CHANGER_SHORT ": " fmt, ## args)
-#define DEBUG(fmt, args...) printk(KERN_DEBUG CHANGER_SHORT ": " fmt, ## args)
-#define CHG changer_devs[minor]
-#define CAP(func,cap) if (o_cdi->ops->func==NULL) CHG.cdi.mask&=~(cap)
+#define INFO(fmt, args...)		printk(KERN_INFO CHANGER_SHORT ": " fmt, ## args)
+#define DEBUG(fmt, args...)	printk(KERN_DEBUG CHANGER_SHORT ": " fmt, ## args)
+#define CHG							changer_devs[minor]
+#define CAP(func,cap)			if (o_cdi->ops->func==NULL) CHG.cdi.mask&=~(cap)
+#define LOCK_DEVICE()			spin_lock(changer_majors[MAJOR(CHG.dev)].spinlock);
+#define UNLOCK_DEVICE()			spin_unlock(changer_majors[MAJOR(CHG.dev)].spinlock);
 
 /**********************************************************************************************************************
   Module Stuff
@@ -275,16 +287,16 @@ static int changer_dev_ioctl(struct cdrom_device_info *cdi,unsigned int cmd,unsi
 MODULE_AUTHOR(CHANGER_AUTHOR);
 MODULE_DESCRIPTION(CHANGER_FULL);
 MODULE_SUPPORTED_DEVICE("cdrom");
-/*MODULE_PARM(debug, "i");*/
 
 /**********************************************************************************************************************
   Structs and other globals.
 **********************************************************************************************************************/
 static struct changer_dev changer_devs[CHANGER_MAX_MINOR];				/* Minor->Device mapping. */
 static int changer_sizes[CHANGER_MAX_MINOR];									/* Sizes. */
-static int changer_blksizes[CHANGER_MAX_MINOR];								/* Sizes. */
+static int changer_blksizes[CHANGER_MAX_MINOR];								/* Block Sizes. */
 static struct changer_maj changer_majors[MAX_BLKDEV];						/* Which slot is which of my minors?
 																							   For dup-checking. */
+
 /* capabilities (all except CDC_SELECT_DISC) */
 #define CHANGER_CAPABILITIES	CDC_CLOSE_TRAY|CDC_OPEN_TRAY|CDC_LOCK|CDC_SELECT_SPEED| \
 										CDC_MULTI_SESSION|CDC_MCN|CDC_MEDIA_CHANGED|CDC_PLAY_AUDIO| \
@@ -320,13 +332,20 @@ static struct cdrom_device_info *changer_get_cdi(struct cdrom_device_info *cdi)
 	return(cdi);
 }
 
-static int changer_change_slot(struct cdrom_device_info *cdi)
+/* Change the disk.
+	should be used in the following sequence:
+	8<-------------------------------------
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		<operation: read/write/info/...>
+		UNLOCK_DEVICE();
+	------------------------------------->8
+*/
+static int changer_change_slot(minor)
 {
-	int minor=MINOR(cdi->dev),result=0;
-	struct cdrom_device_info *o_cdi;
+	int result=0;
 	DEBUG("changer_change_slot(%02x)\n",minor);
-	if ((o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) result=o_cdi->ops->select_disc(o_cdi,CHG.slot);
-	else DEBUG("changer_set(): Couldn't get cdi for selecting discs...\n");
+	result=changer_majors[MINOR(CHG.dev)].cdi->ops->select_disc(changer_majors[MINOR(CHG.dev)].cdi,CHG.slot);
 	return(result);
 }
 
@@ -335,100 +354,112 @@ static int changer_set(struct cdrom_device_info *cdi,struct changer_set *set)
 	int minor=MINOR(cdi->dev),result=0,ret,maj,min;
 	struct cdrom_device_info *o_cdi=NULL;
 
-	/* Was it used before? */
-	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
+	// if set is supplied it must be my version, no set is ok too...
+	if (((set)&&(set->version==CHANGER_VERSION))||(set==NULL))
 	{
-		maj=MAJOR(CHG.dev);
-		min=MINOR(CHG.dev);
-		INFO("changer_set(): UN-Setting minor=%02x device major:minor %02x:%02x slot %d...\n",minor,maj,min,CHG.slot);
-		/* Close/Release the device when opencount reaches 0. */
-		if (changer_majors[maj].opencount==0)
+		/* Was it used before? */
+		if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 		{
-			DEBUG("changer_set(): Closing the device...(opencount==0)\n");
-			if ((o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) changer_wrap_release(o_cdi);
-			else DEBUG("changer_set(): Couldn't get cdi for release...\n");
-		}
-		/* ?? Un-mount/lock/... ?? */
-		/* Unregister MAJOR_NR,minor as cdrom. */
-		unregister_cdrom(&CHG.cdi);
-		changer_majors[maj].minor[min]=NODEV;
-		changer_majors[maj].opencount--;
-	}
-	if (set)
-	{
-		maj=MAJOR(set->dev);
-		if (maj!=MAJOR_NR)
-		{
-			min=MINOR(set->dev);
-			/* Copy attributes / Adapt Settings. */
-			CHG.dev=set->dev;
-			CHG.opencount=0;
-			CHG.slot=set->slot;
-
-			if ((o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops))
+			maj=MAJOR(CHG.dev);
+			min=MINOR(CHG.dev);
+			INFO("changer_set(): UN-Setting minor=%02x device major:minor %02x:%02x slot %d...\n",minor,maj,min,CHG.slot);
+			/* Close/Release the device when opencount reaches 0. */
+			if (changer_majors[maj].opencount==0)
 			{
-				/* Fill in specific dops. */
-				CHG.cdi.ops=&changer_dops;
-				CHG.cdi.handle=NULL;
-				CHG.cdi.dev = MKDEV(MAJOR_NR,minor);
-				CHG.cdi.mask=CHANGER_CAPABILITIES;
-				CHG.cdi.speed=o_cdi->speed;
-				CHG.cdi.capacity=1;
-				CHG.cdi.options=o_cdi->options;
-				CHG.cdi.mc_flags=0;
-				CHG.cdi.use_count=0;
-
-				/* Disable capabilities the drive doesn't have functions for. */
-				CAP(drive_status,CDC_DRIVE_STATUS);
-				CAP(media_changed,CDC_MEDIA_CHANGED);
-				CAP(tray_move,CDC_CLOSE_TRAY+CDC_CLOSE_TRAY);
-				CAP(lock_door,CDC_LOCK);
-				CAP(select_speed,CDC_SELECT_SPEED);
-				CAP(select_disc,CDC_SELECT_DISC);
-				CAP(get_last_session,CDC_MULTI_SESSION);
-				CAP(get_mcn,CDC_MCN);
-				CAP(reset,CDC_RESET);
-				CAP(audio_ioctl,CDC_PLAY_AUDIO);
-				strncpy(CHG.cdi.name,set->name,(20-1));
-				INFO("changer_set(): Setting minor=%02x device major:minor %02x:%02x slot %d...\n",minor,maj,min,set->slot);
-				if (((changer_majors[maj].opencount)>0)||
-						(((changer_majors[maj].opencount)==0)&&(result=changer_wrap_open(o_cdi)==0)))
+				DEBUG("changer_set(): Closing the device...(opencount==0)\n");
+				if ((o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) changer_wrap_release(o_cdi);
+				else DEBUG("changer_set(): Couldn't get cdi for release...\n");
+			}
+			/* ?? Un-mount/lock/... ?? */
+			/* Unregister MAJOR_NR,minor as cdrom. */
+			unregister_cdrom(&CHG.cdi);
+			changer_majors[maj].minor[min]=NODEV;
+			changer_majors[maj].opencount--;
+		}
+		if (set)
+		{
+			maj=MAJOR(set->dev);
+			if (maj!=MAJOR_NR)
+			{
+				min=MINOR(set->dev);
+				/* Copy attributes / Adapt Settings. */
+				CHG.dev=set->dev;
+				CHG.opencount=0;
+				CHG.slot=set->slot;
+	
+				if ((o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops))
 				{
-					DEBUG("changer_set(): Initializing...\n");
-					changer_majors[maj].opencount++;
-					changer_majors[maj].minor[min]=minor;
-		
-					/* Register MAJOR_NR,minor as cdrom. */
-					DEBUG("changer_set(): Registering cdrom...\n");
-					if ((ret=register_cdrom(&CHG.cdi))==0) result=0;
+					/* Cache the cdi. */
+					changer_majors[MINOR(CHG.dev)].cdi=o_cdi;
+	
+					/* Fill in specific dops. */
+					CHG.cdi.ops=&changer_dops;
+					CHG.cdi.handle=NULL;
+					CHG.cdi.dev = MKDEV(MAJOR_NR,minor);
+					CHG.cdi.mask=CHANGER_CAPABILITIES;
+					CHG.cdi.speed=o_cdi->speed;
+					CHG.cdi.capacity=1;
+					CHG.cdi.options=o_cdi->options;
+					CHG.cdi.mc_flags=0;
+					CHG.cdi.use_count=0;
+	
+					/* Disable capabilities the drive doesn't have functions for. */
+					CAP(drive_status,CDC_DRIVE_STATUS);
+					CAP(media_changed,CDC_MEDIA_CHANGED);
+					CAP(tray_move,CDC_CLOSE_TRAY+CDC_CLOSE_TRAY);
+					CAP(lock_door,CDC_LOCK);
+					CAP(select_speed,CDC_SELECT_SPEED);
+					CAP(select_disc,CDC_SELECT_DISC);
+					CAP(get_last_session,CDC_MULTI_SESSION);
+					CAP(get_mcn,CDC_MCN);
+					CAP(reset,CDC_RESET);
+					CAP(audio_ioctl,CDC_PLAY_AUDIO);
+					strncpy(CHG.cdi.name,set->name,(20-1));
+					INFO("changer_set(): Setting minor=%02x device major:minor %02x:%02x slot %d...\n",minor,maj,min,set->slot);
+					if (((changer_majors[maj].opencount)>0)||
+							(((changer_majors[maj].opencount)==0)&&(result=changer_wrap_open(o_cdi)==0)))
+					{
+						DEBUG("changer_set(): Initializing...\n");
+						changer_majors[maj].opencount++;
+						changer_majors[maj].minor[min]=minor;
+			
+						/* Register MAJOR_NR,minor as cdrom. */
+						DEBUG("changer_set(): Registering cdrom...\n");
+						if ((ret=register_cdrom(&CHG.cdi))==0) result=0;
+						else
+						{
+							DEBUG("Cannot become a registered cdrom on major:minor %02x:%02x! (register_cdrom() returned %d)\n",MAJOR_NR,minor,ret);
+							unregister_cdrom(&CHG.cdi);
+							CHG.dev=NODEV;
+							result=-EIO;
+						}
+					}
 					else
 					{
-						DEBUG("Cannot become a registered cdrom on major:minor %02x:%02x! (register_cdrom() returned %d)\n",MAJOR_NR,minor,ret);
-						unregister_cdrom(&CHG.cdi);
 						CHG.dev=NODEV;
-						result=-EIO;
+						result=-EINVAL;
 					}
 				}
 				else
 				{
+					DEBUG("changer_set(): Couldn't get cdi or cdi->ops is empty...\n");
 					CHG.dev=NODEV;
 					result=-EINVAL;
 				}
 			}
 			else
 			{
-				DEBUG("changer_set(): Couldn't get cdi or cdi->ops is empty...\n");
-				CHG.dev=NODEV;
+				INFO("Hmmmm eehmmm someone/thing tried to add myself to myself... wellps... that's a no go...\n");
 				result=-EINVAL;
 			}
 		}
-		else
-		{
-			INFO("Hmmmm eehmmm someone/thing tried to add myself to myself... wellps... that's a no go...\n");
-			result=-EINVAL;
-		}
+		else result=-EINVAL;
 	}
-	else result=-EINVAL;
+	else
+	{
+		INFO("Hi I speak version %d, NOT version %d, which you passed me, update your usertools.\n",CHANGER_VERSION,set->version);
+		result=-EINVAL;
+	}
 	return(result);
 }
 
@@ -462,11 +493,11 @@ static void changer_wrap_release(struct cdrom_device_info *cdi)
 	cdrom_fops.release(&ip,&fp);
 }
 
-/* This needs a LOT of work and testing! */
+/* This needs a lot of testing! */
 static void do_changer_request(void)
 {
 	struct request			*req;
-	int						minor,maj,ok,blksize,block,offset,len,size;
+	int						minor,ok,blksize,block,offset,len,size;
 	char						*dest;
 	struct buffer_head	*bh;
 
@@ -485,9 +516,7 @@ static void do_changer_request(void)
 			/* Is it a used minor? */
 			if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 			{
-				maj=MAJOR(CHG.dev);
-				DEBUG("changer_request(): The request is for minor %02x child %02x:%02x\n",minor,maj,MINOR(CHG.dev));
-				/* Should I issue a change somewhere here? */
+				DEBUG("changer_request(): The request is for minor %02x child %02x:%02x\n",minor,MAJOR(CHG.dev),MINOR(CHG.dev));
 
 				/* Calculate block sizes. */
 				blksize=BLOCK_SIZE;
@@ -514,29 +543,34 @@ static void do_changer_request(void)
 				}
 				len=req->current_nr_sectors<<9;
 
-				/* Unlock and collect all the pieces. */
+				/* Unlock the request so others can procede. */
 				spin_unlock_irq(&io_request_lock);
+				/* Lock the device, and change to the correct disc. */
+				LOCK_DEVICE();
+				changer_change_slot(minor);
+				invalidate_buffers(CHG.dev);
+				/* Collect all the pieces. */
 				while (len>0)
 				{
 					size=blksize-offset;
 					if (size>len) size=len;
 					if ((bh=getblk(CHG.dev,block,blksize)))
 					{
-						DEBUG("changer_request(): getblk() OK\n");
+						/*DEBUG("changer_request(): getblk() OK\n");*/
 						if (!buffer_uptodate(bh)&&((req->cmd==READ)||(offset||(len<blksize))))
 						{
-							DEBUG("changer_request(): Calling ll_rw_block().\n");
+							/*DEBUG("changer_request(): Calling ll_rw_block().\n");*/
 							ll_rw_block(READ,1,&bh);
-							DEBUG("changer_request(): Waiting for buffers to fill.\n");
+							/*DEBUG("changer_request(): Waiting for buffers to fill.\n");*/
 							wait_on_buffer(bh);
-							DEBUG("changer_request(): Buffers are filled.\n");
+							/*DEBUG("changer_request(): Buffers are filled.\n");*/
 							if (!buffer_uptodate(bh))
 							{
 								DEBUG("changer_request(): Hmmm but it didn't work out...\n");
 								ok=0;
 							}
 						}
-						else DEBUG("changer_request(): Buffers were up-to-date.\n");
+						/*else DEBUG("changer_request(): Buffers were up-to-date.\n");*/
 						/* copy the read data to the buffer */
 						if (ok) memcpy(dest,bh->b_data,BLOCK_SIZE);
 						/* Release the buffer head */
@@ -544,8 +578,7 @@ static void do_changer_request(void)
 					}
 					else
 					{
-						DEBUG("changer_request(): getblk() failed.\n");
-					/*	DEBUG("changer_request(): Device %02x: getblk(-, %d, %d) returned NULL\n",maj,req->sector,BLOCK_SIZE);*/
+						DEBUG("changer_request(): Device %02x: getblk(-, %d, %d) returned NULL\n",MAJOR(CHG.dev),(int)req->sector,blksize);
 						ok=0;
 					}
 					dest+=size;
@@ -553,6 +586,8 @@ static void do_changer_request(void)
 					offset=0;
 					block++;
 				}
+				/* All done so unlock the disc. */
+				UNLOCK_DEVICE();
 				spin_lock_irq(&io_request_lock);
 			}
 			else
@@ -599,29 +634,31 @@ __initfunc(static void changer_cleanup(void))
 /* Test if all OK (Called at boot/module-init time). */
 __initfunc(static int changer_init(void))
 {
-	int minor=0,result=0,ret,slot;
+	int minor=0,result=0,ret,slot,i;
 	struct cdrom_device_info fake_cdi = {&changer_dops,0,0,0,0,0,0,0,0,0,"ChangerFake"},*cdi;
-	struct changer_set set = {0,0,""};
+	struct changer_set set = {CHANGER_VERSION,0,0,""};
 
 	DEBUG("changer_init()\n");
-
 	INFO("%s (%s)\n",c_full,c_date);
 	INFO("by %s\n",c_by);
 	INFO("%s\n",c_www);
+
+	/* Initialize data parts. */
+	memset(&changer_devs,0,sizeof(changer_devs));
+	memset(&changer_sizes,0,sizeof(changer_sizes));
+	memset(&changer_blksizes,0,sizeof(changer_blksizes));
+	memset(&changer_majors,0,sizeof(changer_majors));
+
+	/* Initialize all the device spinlocks. */
+	for (i=0;i<CHANGER_MAX_MINOR;i++) changer_majors[i].spinlock=SPIN_LOCK_UNLOCKED;
 
 	if ((ret=register_blkdev(MAJOR_NR,c_short,&cdrom_fops))==0)
 	{
 		blk_dev[MAJOR_NR].request_fn = DEVICE_REQUEST;
 		blk_dev[MAJOR_NR].current_request=NULL;
-		memset(&changer_sizes,0,sizeof(changer_sizes));
-		memset(&changer_blksizes,0,sizeof(changer_blksizes));
 		blk_size[MAJOR_NR]=changer_sizes;
 		blksize_size[MAJOR_NR] = changer_blksizes;
 		read_ahead[MAJOR_NR] = INT_MAX;
-
-		/* Clear structures. */
-		memset(changer_devs,0,CHANGER_MAX_MINOR*sizeof(struct changer_dev));
-		memset(changer_majors,0,MAX_BLKDEV*sizeof(struct changer_maj));
 		
 		/* Trick Time */
 		/* Temporary add a fake cdrom drive. */
@@ -713,12 +750,13 @@ static void changer_release(struct cdrom_device_info *cdi)
 static int changer_drive_status(struct cdrom_device_info *cdi,int slot_nr)
 {
 	int minor=MINOR(cdi->dev),result=-EIO;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_drive_status(%02x:slot=%d)\n",minor,slot_nr);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops))
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->drive_status(o_cdi,slot_nr);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->drive_status(changer_majors[MINOR(CHG.dev)].cdi,CHG.slot);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
 	return(result);		/* CDS_NO_INFO | CDS_NO_DISC | CDS_TRAY_OPEN | CDS_DRIVE_NOT_READY | CDS_DISC_OK */
@@ -728,12 +766,13 @@ static int changer_drive_status(struct cdrom_device_info *cdi,int slot_nr)
 static int changer_media_changed(struct cdrom_device_info *cdi,int disc_nr)
 {
    int minor=MINOR(cdi->dev),result=0;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_media_changed(%02x,disc=%d)\n",minor,disc_nr);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->media_changed(o_cdi,disc_nr);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->media_changed(changer_majors[MINOR(CHG.dev)].cdi,CHG.slot);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
    return(result);		/* 0 = NOT Changed, 1 = Changed */
@@ -743,12 +782,13 @@ static int changer_media_changed(struct cdrom_device_info *cdi,int disc_nr)
 static int changer_tray_move(struct cdrom_device_info *cdi,int position)
 {
 	int minor=MINOR(cdi->dev),result=-EINVAL;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_tray_move(%02x:position=%d)\n",minor,position);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->tray_move(o_cdi,position);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->tray_move(changer_majors[MINOR(CHG.dev)].cdi,position);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
 	return(result);		/* 0 = Ok its there now, 1 = Fail, it won't. */
@@ -758,12 +798,13 @@ static int changer_tray_move(struct cdrom_device_info *cdi,int position)
 static int changer_lock_door(struct cdrom_device_info *cdi,int lock)
 {
 	int minor=MINOR(cdi->dev),result=-EINVAL;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_lock_door(%02x:lock=%d)\n",minor,lock);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->lock_door(o_cdi,lock);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->lock_door(changer_majors[MINOR(CHG.dev)].cdi,lock);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
 	return(result);		/* 0 = Ok it is, 1 = Fail, it won't. */
@@ -773,12 +814,13 @@ static int changer_lock_door(struct cdrom_device_info *cdi,int lock)
 static int changer_select_speed(struct cdrom_device_info *cdi,int speed)
 {
 	int minor=MINOR(cdi->dev),result=-EINVAL;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_select_speed(%02x:speed=%d)\n",minor,speed);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->select_speed(o_cdi,speed);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->select_speed(changer_majors[MINOR(CHG.dev)].cdi,speed);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
 	return(result);		/* >=0 = Ok, <0 = Failed. */
@@ -788,12 +830,13 @@ static int changer_select_speed(struct cdrom_device_info *cdi,int speed)
 static int changer_get_last_session(struct cdrom_device_info *cdi,struct cdrom_multisession *ms_info)
 {
 	int minor=MINOR(cdi->dev),result=-EINVAL;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_get_last_session(%02x)\n",minor);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->get_last_session(o_cdi,ms_info);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->get_last_session(changer_majors[MINOR(CHG.dev)].cdi,ms_info);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
 	return(result);		/* 0 = Success, ??Else = Error?? <-- Not documented!! */
@@ -803,12 +846,13 @@ static int changer_get_last_session(struct cdrom_device_info *cdi,struct cdrom_m
 static int changer_get_mcn(struct cdrom_device_info *cdi,struct cdrom_mcn *mcn)
 {
 	int minor=MINOR(cdi->dev),result=0;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_get_mcn(%02x)\n",minor);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->get_mcn(o_cdi,mcn);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->get_mcn(changer_majors[MINOR(CHG.dev)].cdi,mcn);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
 	return(result);			/* ?? 0 = Fail, char *var[14]="MCNMCNMCNMCNM\0"; ?? <-- Not documented!!  */
@@ -818,12 +862,13 @@ static int changer_get_mcn(struct cdrom_device_info *cdi,struct cdrom_mcn *mcn)
 static int changer_reset(struct cdrom_device_info *cdi)
 {
 	int minor=MINOR(cdi->dev),result=-EINVAL;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_reset(%02x)\n",minor);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->reset(o_cdi);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->reset(changer_majors[MINOR(CHG.dev)].cdi);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
 	return(result);		/* ?? <-- Not documented!! ?? */
@@ -833,12 +878,13 @@ static int changer_reset(struct cdrom_device_info *cdi)
 static int changer_audio_ioctl(struct cdrom_device_info *cdi,unsigned int cmd,void *arg)
 {
 	int minor=MINOR(cdi->dev),result=ENOSYS;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_audio_ioctl(%02x:cmd=%x)\n",minor,cmd);
-	if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 	{
-		changer_change_slot(cdi);
-		result=o_cdi->ops->audio_ioctl(o_cdi,cmd,arg);
+		LOCK_DEVICE();
+		changer_change_slot(minor);
+		result=changer_majors[MINOR(CHG.dev)].cdi->ops->audio_ioctl(changer_majors[MINOR(CHG.dev)].cdi,cmd,arg);
+		UNLOCK_DEVICE();
 	}
 	else result=-EINVAL;
 	return(result);		/* 0 = Success, ENOSYS = Not implemented, other = error. */
@@ -849,7 +895,6 @@ static int changer_dev_ioctl(struct cdrom_device_info *cdi,unsigned int cmd,unsi
 {
 	int minor=MINOR(cdi->dev),result=-EINVAL;
 	struct changer_set set;
-	struct cdrom_device_info *o_cdi;
 	DEBUG("changer_dev_ioctl(%02x:cmd=%x)\n",minor,cmd);
 
 	switch (cmd)
@@ -867,10 +912,12 @@ static int changer_dev_ioctl(struct cdrom_device_info *cdi,unsigned int cmd,unsi
 								}
 								else result=-EACCES;
 								break;
-		default:				if ((((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV)))&&(o_cdi=changer_get_cdi(cdi))&&(o_cdi->ops)) 
+		default:				if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
 								{
-									changer_change_slot(cdi);
-									result=o_cdi->ops->dev_ioctl(changer_get_cdi(cdi),cmd,arg);
+									LOCK_DEVICE();
+									changer_change_slot(minor);
+									result=changer_majors[MINOR(CHG.dev)].cdi->ops->dev_ioctl(changer_majors[MINOR(CHG.dev)].cdi,cmd,arg);
+									UNLOCK_DEVICE();
 								}
 								else result=-EINVAL;
 	}
