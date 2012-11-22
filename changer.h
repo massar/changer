@@ -15,9 +15,9 @@
 
 #define CHANGER_SHORT	"changer"
 #define CHANGER_AUTHOR	"Jeroen Massar <jmassar@unfix.org>"
-#define CHANGER_FULL		"Changer CdRom Wrapper Device"
-#define CHANGER_DATE		"17 March 1999"
-#define CHANGER_VERSION	19990317
+#define CHANGER_FULL		"/dev/changer"
+#define CHANGER_DATE		"18 March 1999"
+#define CHANGER_VERSION	19990318
 #define CHANGER_WWW		"http://unfix.org/projects/changer"
 #define CHANGER_DEVNAME	"changer"
 

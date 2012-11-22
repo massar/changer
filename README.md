@@ -1,30 +1,34 @@
 changer
 =======
 
-/dev/changer - Linux Kernel CD Disk Changer support16 March 1999
+Friday, 19 March 1999
 
 Hi,
 
-Well this is the very first, almost working beta alpha gamma of /dev/changer.
-It shouldn't even compile for you... cause you're missing some stuff in the
-kernel includes which manually editted but haven't included patches for yet.
+Well this is one of the very first, almost working beta alpha's of /dev/changer.
+It works but don't stress it to much.
+I tried to play an mp3 from one cd and cat another cd and my filesystems simply
+deadlocked... so notez bien: you're really playing with alpha software...
+I'll try and fix this asap, seeing that I've only worked on this for about 9 nights
+which is approx. 9*6 hours it seems to work pretty well already...
 
-See the source code for all the rest of the documentation available.
+See the source code and the website for the rest of the documentation available.
 
-What:
+Description
+~~~~~~~~~~~
 /dev/changer will allow you to mount all the cd's in your changer(s) at once.
-thus avoiding the hassle with scripts etc. And effectivly allowing a cheap way
-to expensive jukeboxes along with their software...
+thus avoiding the hassle with scripts or other custom software. 
 
-A few things you should know:
-root@heaven.unfix.org # for i in `seq 255`; do mknod /dev/changer$i b 42 $i; mkdir -p /cdrom/$i done
-and then:
-root@heaven.unfix.org # mount /dev/changer1 /cdrom/1 -t iso9660
+Compiling & Using
+~~~~~~~~~~~~~~~~~
+jeroen@heaven.unfix.org:/raid/chg$ make clean
+jeroen@heaven.unfix.org:/raid/chg$ make
+root@heaven.unfix.org:/raid/chg# for i in `seq 255`; do mknod /dev/changer$i b 42 $i; mkdir -p /cdrom/$i done
+root@heaven.unfix.org:/raid/chg# mount /dev/changer1 /cdrom/1 -t iso9660
 
-For any comments etc, send it to: jmassar@unfix.org or check the website at http://unfix.org/projects/changer
+For comments etc, send them to: jeroen@massar.ch or check the website at http://unfix.org/projects/changer
 
 Greets,
  Jeroen Massar
-
-http://unfix.org - jmassar@unfix.org
+ jeroen@massar.ch
 
