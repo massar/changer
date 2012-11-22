@@ -3,7 +3,8 @@ changer
 
 Hi,
 
-Yet another version.
+Yet another version, fixing some patching problems with 2.2.14.
+Memset is still a pain in the special dark place... but it works...
 See the source code and the website for the rest of the documentation available.
 For comments etc, send them to: jeroen@massar.ch or check the website at http://unfix.org/projects/changer
 
@@ -21,12 +22,12 @@ The code is GPL'ed as attached into the source code.
 
 Description
 ~~~~~~~~~~~
-/dev/changer will allow you to mount all the cd's in your changer(s) at once.
+/dev/changer will allow you to mount all the cd's in your IDE changer(s) at once.
 thus avoiding the hassle with scripts or other custom software.
 
 Status
 ~~~~~~
-/dev/changer can now be considered to be at a beta-testing level.
+/dev/changer can now be considered to be at a stable level.
 
 Currently we only have the following problems:
 -	It's a changer so you technically CAN'T access two slots at the same time.
@@ -56,9 +57,11 @@ root@heaven:/usr/src/local/# dpkg -i *.deb
 line 1: patch the kernel
 line 2: configure the kernel (select either CHANGER=module or CHANGER=yes)
 line 3: make debian kernel packages, non-debian users could use:
+line 4: install the new kernel
 8<----------------------------------------
-root@machine:/usr/src/local/linux-2.2.4# make dep bzimage modules modules_install
+root@machine:/usr/src/local/linux-2.2.4# make dep bzLilo modules modules_install
 ---------------------------------------->8
+And don't forget to modify your lilo where required...
 then reboot the newly installed kernel, see your favourite kernel HOWTO...
 
 If you've created a module you'll have to insmod it

@@ -1,16 +1,17 @@
-diff -u --new-file --recursive linux-229/CREDITS linux-229-changer/CREDITS
---- linux-229/CREDITS	Tue May 11 18:57:14 1999
-+++ linux-229-changer/CREDITS	Wed May 19 00:25:31 1999
-@@ -1292,6 +1292,17 @@
+diff -u --new-file --recursive linux-2338/CREDITS linux-2338-changer/CREDITS
+--- linux-2338/CREDITS	Fri Jan  7 20:55:28 2000
++++ linux-2338-changer/CREDITS	Tue Feb  1 01:22:19 2000
+@@ -1412,6 +1412,18 @@
  D: XF86_8514
  D: cfdisk (curses based disk partitioning program)
  
 +N: Jeroen Massar
-+E: jmassar@unfix.org
++E: jeroen@unfix.org
 +W: http://unfix.org
 +W: http://unfix.org/members/jmassar
 +D: /dev/changer
 +D: unfix.org BOFH
++D: Annoying Brick
 +S: Jeroen Massar
 +S: Gortmolenerf 46
 +S: 2807 EJ, Gouda
@@ -19,16 +20,16 @@ diff -u --new-file --recursive linux-229/CREDITS linux-229-changer/CREDITS
  N: Mike McLagan
  E: mike.mclagan@linux.org
  W: http://www.invlogic.com/~mmclagan
-diff -u --new-file --recursive linux-229/Documentation/Configure.help linux-229-changer/Documentation/Configure.help
---- linux-229/Documentation/Configure.help	Tue May 11 18:57:14 1999
-+++ linux-229-changer/Documentation/Configure.help	Wed May 19 00:25:31 1999
-@@ -259,6 +259,20 @@
+diff -u --new-file --recursive linux-2338/Documentation/Configure.help linux-2338-changer/Documentation/Configure.help
+--- linux-2338/Documentation/Configure.help	Fri Jan  7 20:43:09 2000
++++ linux-2338-changer/Documentation/Configure.help	Tue Feb  1 01:22:19 2000
+@@ -286,6 +286,20 @@
  
    Most users will answer N here.
  
 +/dev/changer
 +CONFIG_CHANGER
-+  This driver allows you to mount all the slots of a cd-changer at once,
++  This driver allows you to mount all the slots of an IDE cd-changer at once,
 +  and also use them at once... with auto-swapping ability.
 +  The driver is totally transparant so for example you'll get /dev/changer3
 +  which otherwise would be /dev/scd0 slot 3.
@@ -43,11 +44,11 @@ diff -u --new-file --recursive linux-229/Documentation/Configure.help linux-229-
  Network Block Device support
  CONFIG_BLK_DEV_NBD
    Saying Y here will allow your computer to be a client for network
-diff -u --new-file --recursive linux-229/MAINTAINERS linux-229-changer/MAINTAINERS
---- linux-229/MAINTAINERS	Sat May  8 21:49:46 1999
-+++ linux-229-changer/MAINTAINERS	Wed May 19 00:25:31 1999
-@@ -220,6 +220,13 @@
- L:	netdev@roxanne.nuclecu.unam.mx
+diff -u --new-file --recursive linux-2338/MAINTAINERS linux-2338-changer/MAINTAINERS
+--- linux-2338/MAINTAINERS	Fri Jan  7 01:17:18 2000
++++ linux-2338-changer/MAINTAINERS	Tue Feb  1 01:22:19 2000
+@@ -269,6 +269,13 @@
+ L:	netdev@oss.sgi.com
  S:	Maintained
  
 +DEV/CHANGER
@@ -60,57 +61,79 @@ diff -u --new-file --recursive linux-229/MAINTAINERS linux-229-changer/MAINTAINE
  DEVICE NUMBER REGISTRY
  P:	H. Peter Anvin
  M:	hpa@zytor.com
-diff -u --new-file --recursive linux-229/Makefile linux-229-changer/Makefile
---- linux-229/Makefile	Wed May 19 02:09:22 1999
-+++ linux-229-changer/Makefile	Wed May 19 00:26:00 1999
+diff -u --new-file --recursive linux-2338/Makefile linux-2338-changer/Makefile
+--- linux-2338/Makefile	Sat Jan  8 02:03:11 2000
++++ linux-2338-changer/Makefile	Tue Feb  1 01:22:43 2000
 @@ -1,7 +1,7 @@
  VERSION = 2
- PATCHLEVEL = 2
- SUBLEVEL = 9
+ PATCHLEVEL = 3
+ SUBLEVEL = 38
 -EXTRAVERSION =
 +EXTRAVERSION = -changer
  
  ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
  
-diff -u --new-file --recursive linux-229/drivers/block/Config.in linux-229-changer/drivers/block/Config.in
---- linux-229/drivers/block/Config.in	Thu Apr 29 21:53:48 1999
-+++ linux-229-changer/drivers/block/Config.in	Wed May 19 00:25:31 1999
-@@ -96,6 +96,7 @@
+@@ -158,7 +158,7 @@
+ DRIVERS := $(DRIVERS) drivers/scsi/scsi.a
+ endif
+ 
+-ifneq ($(CONFIG_CD_NO_IDESCSI)$(CONFIG_BLK_DEV_IDECD)$(CONFIG_BLK_DEV_SR)$(CONFIG_PARIDE_PCD),)
++ifneq ($(CONFIG_CD_NO_IDESCSI)$(CONFIG_BLK_DEV_IDECD)$(CONFIG_BLK_DEV_SR)$(CONFIG_PARIDE_PCD)$(CONFIG_CHANGER),)
+ DRIVERS := $(DRIVERS) drivers/cdrom/cdrom.a
+ endif
+ 
+diff -u --new-file --recursive linux-2338/drivers/Makefile linux-2338-changer/drivers/Makefile
+--- linux-2338/drivers/Makefile	Thu Dec 30 02:13:02 1999
++++ linux-2338-changer/drivers/Makefile	Tue Feb  1 01:22:19 2000
+@@ -109,7 +109,7 @@
+   endif
+ endif
+ 
+-ifneq ($(CONFIG_CD_NO_IDESCSI)$(CONFIG_BLK_DEV_IDECD)$(CONFIG_BLK_DEV_SR)$(CONFIG_PARIDE_PCD),)
++ifneq ($(CONFIG_CD_NO_IDESCSI)$(CONFIG_BLK_DEV_IDECD)$(CONFIG_CHANGER)$(CONFIG_BLK_DEV_SR)$(CONFIG_PARIDE_PCD),)
+ SUB_DIRS += cdrom
+ MOD_SUB_DIRS += cdrom
+ endif
+diff -u --new-file --recursive linux-2338/drivers/block/Config.in linux-2338-changer/drivers/block/Config.in
+--- linux-2338/drivers/block/Config.in	Thu Jan  6 23:46:18 2000
++++ linux-2338-changer/drivers/block/Config.in	Tue Feb  1 01:22:19 2000
+@@ -186,6 +186,7 @@
  comment 'Additional Block Devices'
  
  tristate 'Loopback device support' CONFIG_BLK_DEV_LOOP
 +tristate '/dev/changer support' CONFIG_CHANGER
  if [ "$CONFIG_NET" = "y" ]; then
-   tristate 'Network block device support' CONFIG_BLK_DEV_NBD
+    tristate 'Network block device support' CONFIG_BLK_DEV_NBD
  fi
-diff -u --new-file --recursive linux-229/drivers/block/Makefile linux-229-changer/drivers/block/Makefile
---- linux-229/drivers/block/Makefile	Tue Apr 13 01:18:27 1999
-+++ linux-229-changer/drivers/block/Makefile	Wed May 19 00:25:31 1999
-@@ -94,6 +94,14 @@
-   endif
+diff -u --new-file --recursive linux-2338/drivers/block/Makefile linux-2338-changer/drivers/block/Makefile
+--- linux-2338/drivers/block/Makefile	Fri Nov 12 19:12:11 1999
++++ linux-2338-changer/drivers/block/Makefile	Tue Feb  1 01:22:19 2000
+@@ -30,6 +30,14 @@
+ L_OBJS += swim3.o
  endif
  
 +ifeq ($(CONFIG_CHANGER),y)
-+  L_OBJS += changer.o
++LX_OBJS += changer.o
 +else
-+  ifeq ($(CONFIG_CHANGER),m)
-+    M_OBJS += changer.o
-+  endif
-+endif
++	ifeq ($(CONFIG_CHANGER),m)
++	MX_OBJS += changer.o
++	endif
++endif          
 +
- ifeq ($(CONFIG_BLK_DEV_HD),y)
- L_OBJS += hd.o
- endif
-diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-changer/drivers/block/changer.c
---- linux-229/drivers/block/changer.c	Thu Jan  1 01:00:00 1970
-+++ linux-229-changer/drivers/block/changer.c	Wed May 19 01:31:33 1999
-@@ -0,0 +1,1305 @@
+ ifeq ($(CONFIG_BLK_DEV_FD),y)
+ L_OBJS += floppy.o
+ else
+diff -u --new-file --recursive linux-2338/drivers/block/changer.c linux-2338-changer/drivers/block/changer.c
+--- linux-2338/drivers/block/changer.c	Thu Jan  1 01:00:00 1970
++++ linux-2338-changer/drivers/block/changer.c	Tue Feb  1 01:22:19 2000
+@@ -0,0 +1,1366 @@
 +/**********************************************************************************************************************
-+  /dev/changer by Jeroen Massar aka fuzzel/unfix <jmassar@unfix.org>               http://unfix.org/projects/changer
++  /dev/changer by Jeroen Massar aka fuzzel/unfix <jeroen@unfix.org>               http://unfix.org/projects/changer
 +***********************************************************************************************************************
 + TAB=3
 +
-+ Copyright (C) 1999, Jeroen Massar
++ Copyright (C) 1998-2000, Jeroen Massar
++ But entirely in the GPL (see below).
 +
 + Introduction
 +	Normally it isn't allowed to mount all the discs of a changer at once, that is because
@@ -150,6 +173,13 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +	or on the backup at:
 +		http://www.fuzzel.cistron.nl/unfix/projects/changer
 +
++ Contacting
++ 	If the above stated email address jeroen@unfix.org doesn't work for some reason
++	you can always contact me through jeroen@heaven.cistron.nl.
++
++	I am usually on IRCNet at #linux.nl, #cistron & #unfix as Fuzzel, so catch me
++	there if you dare... Sometimes I also visit the #debian-devel on the OpenProjects Server
++
 + Legal Mumbo Jumbo
 +	Well first thing first its my idea, so I want my name to be kept with it too.
 +	For the rest... it's for Linux - The Peoples Operating System, so copy it whenever
@@ -183,15 +213,22 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +			- for having a Teac CD-C68E priced at 200 guilders.
 +		Andrew Tridgell & The Samba Team
 +			- for Samba, allowing me to share the changer to my NT Xterminal.
-+		Emiel "Clone" Lensink, Pieter "Suf-Duck" de Boer, Jean-Paul "Corwin" Mars,
-+			Jeroen "Spook" Akershoek, Vera "Fear" Mafait
-+			- for being Un(f)iX...
-+		Beer/Neworder & Andabata
++		Emiel "Clone" Lensink, Pieter "Suf-Duq" de Boer, Jean-Paul "Nippon" Mars,
++			Jeroen "Spook" Akershoek, Vera "Fear" Mafait and Jan Folkert "Saryon" Bethlehem
++			- for being Unfix...
++		Beer / New Order & Andabata
 +			- The hosting of unfix.org.
-+		#linux.nl
-+			- for the general laughter...
++		#linux.nl, #unfix, #cistron & #nlcoders on IRCNet
++			- for the usual fun & laughter...
 +		Thomas E. Dodd
 +			- for the silly wrapper_open fix.
++
++ Greets
++	Greetings fly out to everyone in the demo-scene, especially people in the Dutch Demo Scene.
++	Also to everyone working with Linux and making it a success.
++	I'd also like to greet my fellow colleagues at CistroN (www.cistron.nl), the folks
++	at the Utrechte Vereniging voor Informatica Studenten (www.uvis.fnt.hvu.nl) and
++	the guys & gals of the Debian project!
 +
 + Detailed History (child=underlying lowleveldriver)
 +	20 November 1998
@@ -313,7 +350,27 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +		  of changed semantics in the 2.2.8+ and gcc bitching about it...
 +		- Tested as 2.2.9-changer.
 +
-+Status: (BETA HACK)
++	=== 2000 ===
++
++	13 January 2000 (stable)
++		- Finally got myself a 56k modem and I am going to provide my house
++		  with Internet access, the changer device has still been working since
++		  the last time I did something with it. And it still isn't in either
++		  the stable or the development kernel-tree, maybe Y2k brings luck :)
++		  I'll release this version again as it's seems that the 2.2.14 I am
++		  compiling it against works quite well...
++		- Heaven now also has a Pioneer 4x 6-disc scsi-changer which runs with
++		  the scsi driver and also works great :)
++	30/31 January & 01 February 2000
++		- memset is a pain in that special dark place... it still isn't linked
++		  prolly because some other routine is using it, but I don't have a clue which one that is...
++		- Miquel van Smoorenburg pointed out to me that memset is an inline and that I should compile
++		  with -O2... but to no prevail even a -O6 didn't help. Other modules seem to "lack" this problem.
++		- I simply #undef'd memset, and inserted the version from lib/string.h...
++		  It's dirty but it works... I need my changer... my MSDN cd's are in it...
++		  Only one warning about the memset function, but I don't care for now... it works...
++
++Status: Stable
 +	It works quite well (IMO), but it should be seen as a big hack, even though that the whole of
 +	linux could be called a big hack... but it's a hack that works.
 +	Currently it does what it is required todo.. but you don't want to know how and why :)
@@ -323,6 +380,8 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +	I've already upgraded heaven's Debian install from Hamm to Slink, by using the two cd's
 +	in my Teac changer and using an apt filepath pointing to the /dev/changer mounted cd's,
 +	and as I can still type this it like still works :)
++	And also because I have been using the 13 April 1999 version since I made it and it still works
++	even without Millenium bugs :) Note: This means I have been using it for almost 10 months!
 +
 +Notes:
 +	- drive_status & media_changed also pass along a slot number... does it have to be changed first then?
@@ -375,7 +434,7 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +*** Mental Notes *******************************************************************************************************
 +#define you the_one_reading_this()
 +#define me	"Jeroen Massar"
-+if (you==me)
++if (you == me)
 +{
 + Changes to files, eg what the diff-patch changes to a kernel source.
 +	- include/linux/blk.h				- Added device entry.									- see CHANGER_MAJOR
@@ -413,12 +472,12 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +**********************************************************************************************************************/
 +#include <linux/changer.h>
 +
-+const char c_full[]	= CHANGER_FULL;
-+const char c_short[]	= CHANGER_SHORT;
-+const char c_date[]	= CHANGER_DATE;
-+const char c_by[]		= CHANGER_AUTHOR;
-+const char c_www[]	= CHANGER_WWW;
-+const char c_list[]	= CHANGER_LIST;
++static char c_full[]		= CHANGER_FULL;
++static char c_short[]	= CHANGER_SHORT;
++static char c_date[]		= CHANGER_DATE;
++static char c_by[]		= CHANGER_AUTHOR;
++static char c_www[]		= CHANGER_WWW;
++static char c_list[]		= CHANGER_LIST;
 +
 +/* I'll use 42 as a testing major number (see major.h and blk.h). */
 +/* This is correct per Documention/Devices.txt, I'll request a real one shortly.. */
@@ -456,7 +515,10 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +/**********************************************************************************************************************
 +  Includes
 +**********************************************************************************************************************/
++#include <linux/version.h>
++#include <linux/major.h>
 +#include <linux/module.h>
++#include <linux/types.h>
 +#include <linux/errno.h>
 +#include <linux/signal.h>
 +#include <linux/sched.h>
@@ -470,10 +532,13 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +#include <linux/delay.h>
 +#include <linux/init.h>
 +#include <linux/blk.h>
++#include <linux/blkdev.h>
++#include <linux/malloc.h>
 +
 +#include <asm/system.h>
 +#include <asm/io.h>
 +#include <asm/uaccess.h>
++#include <asm/spinlock.h>
 +
 +/* Enable Debug Ability 1=On, else Off. */
 +/* When off then it won't include any of the debug code nor
@@ -481,36 +546,36 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +#define ENABLE_DEBUG_ABILITY		1
 +
 +/*** Message Strings (for INFO()) ***/
-+const char Msg_Minor[]			= "%s: %s(): Minor %d is out of range.\n";
-+const char Msg_NoSelect[]		= "%s: %s(): Device %s doesn't support select_disc... is this really a changer?\n";
-+const char Msg_RegFail[]		= "%s: %s(): Cannot become a registered cdrom on device %s (register_cdrom() returned %d)\n";
-+const char Msg_NoOPS[]			= "%s: %s(): Couldn't get cdi or cdi->ops is unset...\n";
-+const char Msg_OpenFail[]		= "%s: %s(): Couldn't open the device %s...\n";
-+const char Msg_NoSlot[]			= "%s: %s(): Couldn't select slot %d on device %s.\n";
-+const char Msg_Set[]				= "%s: %s(): Setting minor=%02x device %s slot %d...\n";
-+const char Msg_UnSet[]			= "%s: %s(): UN-Setting minor=%02x device %s slot %d...\n";
-+const char Msg_UnSetUsed[]		= "%s: %s(): Couldn' unset minor=%02x device %s slot %d cause opencount=%d...\n";
-+const char Msg_AddSelf[]		= "%s: %s(): Hmmmm eehmmm someone/thing tried to add myself to myself... wellps... that's a no go...\n";
-+const char Msg_What[]			= "%s: %s(): Hi I speak version %d and NOT version %d, which you passed me, so go update your usertools!\n";
-+const char Msg_What2[]			= "%s: %s(): It's the correct version but not the correct size which should've been %d, but it is %d...\n";
-+const char Msg_BuffUpd[]		= "%s: %s(): Unable to update buffers...\n";
-+const char Msg_GetBlk[]			= "%s: %s(): Device %s: getblk(-, %d, %d) returned NULL\n";
-+const char Msg_ChildNotUsed[]	= "%s: %s(): Child %02x is unused...\n";
-+const char Msg_ReqNotMine[]	= "%s: %s(): Got a request for %s which is Not one of me...\n";
-+const char Msg_Header1[]		= "%s: %s (%s) by %s\n";
-+const char Msg_Header2[]		= "%s: %s, %s\n";
-+const char Msg_FakeFail[]		= "%s: %s(): Couldn't add a temp. fake device, use the userland program to add changers (register_cdrom()=%d)\n";
-+const char Msg_MajorRegFail[]	= "%s: %s(): Unable to register major %02x! (register_blkdev() returned %d)\n";
-+const char Msg_InitOk[]			= "%s: Initialized Ok...\n";
-+const char Msg_ModuleFreed[]	= "%s: %s(): Module freed... Have a pleasant day.\n";
-+const char Msg_Level[]			= "%s: %s(): Setting information level to %x.\n";
++static char Msg_Minor[]			= "%s: %s(): Minor %d is out of range.\n";
++static char Msg_NoSelect[]		= "%s: %s(): Device %s doesn't support select_disc... is this really a changer?\n";
++static char Msg_RegFail[]		= "%s: %s(): Cannot become a registered cdrom on device %s (register_cdrom() returned %d)\n";
++static char Msg_NoOPS[]			= "%s: %s(): Couldn't get cdi or cdi->ops is unset...\n";
++static char Msg_OpenFail[]		= "%s: %s(): Couldn't open the device %s...\n";
++static char Msg_NoSlot[]			= "%s: %s(): Couldn't select slot %d on device %s.\n";
++static char Msg_Set[]				= "%s: %s(): Setting minor=%02x device %s slot %d...\n";
++static char Msg_UnSet[]			= "%s: %s(): UN-Setting minor=%02x device %s slot %d...\n";
++static char Msg_UnSetUsed[]		= "%s: %s(): Couldn' unset minor=%02x device %s slot %d cause opencount=%d...\n";
++static char Msg_AddSelf[]		= "%s: %s(): Hmmmm eehmmm someone/thing tried to add myself to myself... wellps... that's a no go...\n";
++static char Msg_What[]			= "%s: %s(): Hi I speak version %d and NOT version %d, which you passed me, so go update your usertools!\n";
++static char Msg_What2[]			= "%s: %s(): It's the correct version but not the correct size which should've been %d, but it is %d...\n";
++static char Msg_BuffUpd[]		= "%s: %s(): Unable to update buffers...\n";
++static char Msg_GetBlk[]			= "%s: %s(): Device %s: getblk(-, %d, %d) returned NULL\n";
++static char Msg_ChildNotUsed[]	= "%s: %s(): Child %02x is unused...\n";
++static char Msg_ReqNotMine[]	= "%s: %s(): Got a request for %s which is Not one of me...\n";
++static char Msg_Header1[]		= "%s: %s (%s) by %s\n";
++static char Msg_Header2[]		= "%s: %s, %s\n";
++static char Msg_FakeFail[]		= "%s: %s(): Couldn't add a temp. fake device, use the userland program to add changers (register_cdrom()=%d)\n";
++static char Msg_MajorRegFail[]	= "%s: %s(): Unable to register major %02x! (register_blkdev() returned %d)\n";
++static char Msg_InitOk[]			= "%s: Initialized Ok...\n";
++static char Msg_ModuleFreed[]	= "%s: %s(): Module freed... Have a pleasant day.\n";
++static char Msg_Level[]			= "%s: %s(): Setting information level to %x.\n";
 +
 +/**********************************************************************************************************************
 +  Macros
 +**********************************************************************************************************************/
-+#define INFO(lev,fmt,args...)		if (changer_output_level&lev) printk(fmt,KERN_INFO CHANGER_SHORT, ## args)
++#define INFO(lev,fmt,args...)		if (changer_output_level&lev) printk(fmt,KERN_INFO CHANGER_SHORT, ## args);
 +#if (ENABLE_DEBUG_ABILITY==1)
-+#define DEBUG(lev,fmt,args...)	if ((changer_output_level&LEVEL_DEBUG)&&(changer_output_level&lev)) printk(KERN_DEBUG CHANGER_SHORT ": " fmt, ## args)
++#define DEBUG(lev,fmt,args...)	if ((changer_output_level&LEVEL_DEBUG)&&(changer_output_level&lev)) printk(KERN_DEBUG CHANGER_SHORT ": " fmt, ## args);
 +#else
 +#define DEBUG(lev,fmt,args...)
 +#endif
@@ -571,6 +636,15 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +/**********************************************************************************************************************
 +  Internal Functions
 +**********************************************************************************************************************/
++/* Dirty trick to get it working.... I am sick of it... */
++#undef memset
++void *memset(void *s, char c, int count)
++{
++	char *xs = (char *) s;
++	while (count--) *xs++ = c;
++	return s;
++}
++
 +/* Change the disk.
 +	should be used in the following sequence:
 +	8<-------------------------------------
@@ -751,8 +825,14 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +		}
 +		else
 +		{
-+			if (set->version!=CHANGER_VERSION_SET) INFO(LEVEL_ERR,Msg_What,"changer_set",CHANGER_VERSION_SET,set->version);
-+			else INFO(LEVEL_ERR,Msg_What2,"changer_set",sizeof(set),set->size);
++			if (set->version != CHANGER_VERSION_SET)
++			{
++				INFO(LEVEL_ERR,Msg_What,"changer_set",CHANGER_VERSION_SET,set->version);
++			}
++			else
++			{
++				INFO(LEVEL_ERR,Msg_What2,"changer_set",sizeof(set),set->size);
++			}
 +			result=-EINVAL;
 +		}
 +	}
@@ -779,13 +859,13 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +		changer_majors[MAJOR(CHG.dev)].file=get_empty_filp();
 +		if (changer_majors[MAJOR(CHG.dev)].file)
 +		{
-+			memset(&changer_majors[MAJOR(CHG.dev)].inode,0,sizeof(changer_majors[MAJOR(CHG.dev)].inode));
-+			memset(&changer_majors[MAJOR(CHG.dev)].dentry,0,sizeof(changer_majors[MAJOR(CHG.dev)].dentry));
-+			changer_majors[MAJOR(CHG.dev)].inode.i_rdev=CHG.dev;
-+			changer_majors[MAJOR(CHG.dev)].file->f_mode=1;	/* read only */
-+			changer_majors[MAJOR(CHG.dev)].file->f_dentry=&changer_majors[MAJOR(CHG.dev)].dentry;
-+			changer_majors[MAJOR(CHG.dev)].file->f_flags=O_NONBLOCK;
-+			changer_majors[MAJOR(CHG.dev)].dentry.d_inode=&changer_majors[MAJOR(CHG.dev)].inode;
++			memset(&changer_majors[MAJOR(CHG.dev)].inode,  0, sizeof(changer_majors[MAJOR(CHG.dev)].inode));
++			memset(&changer_majors[MAJOR(CHG.dev)].dentry, 0, sizeof(changer_majors[MAJOR(CHG.dev)].dentry));
++			changer_majors[MAJOR(CHG.dev)].inode.i_rdev   = CHG.dev;
++			changer_majors[MAJOR(CHG.dev)].file->f_mode   = 1;	/* read only */
++			changer_majors[MAJOR(CHG.dev)].file->f_dentry = &changer_majors[MAJOR(CHG.dev)].dentry;
++			changer_majors[MAJOR(CHG.dev)].file->f_flags  = O_NONBLOCK;
++			changer_majors[MAJOR(CHG.dev)].dentry.d_inode = &changer_majors[MAJOR(CHG.dev)].inode;
 +			/* Adds support for dynamic module loading */
 +			ret=blkdev_open(&changer_majors[MAJOR(CHG.dev)].inode,changer_majors[MAJOR(CHG.dev)].file);
 +			if (!ret)
@@ -799,7 +879,7 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +		}
 +		else ret=-ENFILE;
 +	}
-+	else INFO(LEVEL_ERR,Msg_Minor,"changer_wrap_open",minor);
++	else INFO(LEVEL_ERR,Msg_Minor, "changer_wrap_open", minor);
 +	return(ret);
 +}
 +
@@ -811,7 +891,7 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +	int				minor=MINOR(cdi->dev);
 +
 +	DEBUG(LEVEL_FUNC,"changer_wrap_release()\n");
-+	if ((minor<CHANGER_MAX_MINOR)&&(CHG.dev!=NODEV))
++	if ( (minor < CHANGER_MAX_MINOR) && (CHG.dev != NODEV) )
 +	{
 +		blkdev_release(changer_majors[MAJOR(CHG.dev)].file->f_dentry->d_inode);
 +		dput(changer_majors[MAJOR(CHG.dev)].file->f_dentry);
@@ -924,7 +1004,7 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +								}
 +								else DEBUG(LEVEL_XS,"changer_request(): Buffers were up-to-date.\n");
 +								/* copy the read data to the buffer */
-+								if (ok) memcpy(dest,bh->b_data+offset,BLOCK_SIZE);
++								if (ok) memcpy(dest, bh->b_data+offset, BLOCK_SIZE);
 +								/* Release the buffer head */
 +								brelse(bh);
 +							}
@@ -1076,7 +1156,10 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +		INFO(LEVEL_ERR,Msg_MajorRegFail,"initfunc",MAJOR_NR,ret);
 +		result=-EIO;
 +	}
-+	if (result==0)	INFO(LEVEL_INFO,Msg_InitOk);
++	if (result == 0)
++	{
++		INFO(LEVEL_INFO,Msg_InitOk);
++	}
 +	else changer_cleanup();
 +	return(result);
 +}
@@ -1410,35 +1493,28 @@ diff -u --new-file --recursive linux-229/drivers/block/changer.c linux-229-chang
 +}
 +#endif MODULE
 +
-diff -u --new-file --recursive linux-229/drivers/block/ll_rw_blk.c linux-229-changer/drivers/block/ll_rw_blk.c
---- linux-229/drivers/block/ll_rw_blk.c	Fri Mar 12 08:20:14 1999
-+++ linux-229-changer/drivers/block/ll_rw_blk.c	Wed May 19 00:25:31 1999
-@@ -443,8 +443,9 @@
- 
+diff -u --new-file --recursive linux-2338/drivers/block/ll_rw_blk.c linux-2338-changer/drivers/block/ll_rw_blk.c
+--- linux-2338/drivers/block/ll_rw_blk.c	Mon Dec 13 07:55:54 1999
++++ linux-2338-changer/drivers/block/ll_rw_blk.c	Tue Feb  1 01:26:29 2000
+@@ -563,7 +563,7 @@
  /* look for a free request. */
         /* Loop uses two requests, 1 for loop and 1 for the real device.
--        * Cut max_req in half to avoid running out and deadlocking. */
+         * Cut max_req in half to avoid running out and deadlocking. */
 -	 if ((major == LOOP_MAJOR) || (major == NBD_MAJOR))
-+        * Cut max_req in half to avoid running out and deadlocking.
-+		  * This is also true for nbd and changer device. */
 +	 if ((major == LOOP_MAJOR) || (major == NBD_MAJOR) || (major == CHANGER_MAJOR))
  	     max_req >>= 1;
  
  	/*
-@@ -459,9 +460,10 @@
- 	spin_lock_irqsave(&io_request_lock,flags);
- 	req = *get_queue(bh->b_rdev);
+@@ -581,7 +581,7 @@
  	if (!req) {
--		/* MD and loop can't handle plugging without deadlocking */
-+		/* MD, loop and changer can't handle plugging without deadlocking */
+ 		/* MD and loop can't handle plugging without deadlocking */
  		if (major != MD_MAJOR && major != LOOP_MAJOR && 
--		    major != DDV_MAJOR && major != NBD_MAJOR)
-+		    major != DDV_MAJOR && major != NBD_MAJOR &&
-+			 major != CHANGER_MAJOR)
- 			plug_device(blk_dev + major); /* is atomic */
+-		    major != DDV_MAJOR && major != NBD_MAJOR
++		    major != DDV_MAJOR && major != NBD_MAJOR && major != CHANGER_MAJOR
+ 		    && q->use_plug)
+ 			plug_device(q); /* is atomic */
  	} else switch (major) {
- 	     case IDE0_MAJOR:	/* same as HD_MAJOR */
-@@ -828,6 +830,9 @@
+@@ -1045,6 +1045,9 @@
  #endif
  #ifdef CONFIG_BLK_DEV_NBD
  	nbd_init();
@@ -1448,20 +1524,20 @@ diff -u --new-file --recursive linux-229/drivers/block/ll_rw_blk.c linux-229-cha
  #endif
  	return 0;
  };
-diff -u --new-file --recursive linux-229/drivers/cdrom/Makefile linux-229-changer/drivers/cdrom/Makefile
---- linux-229/drivers/cdrom/Makefile	Fri Aug 21 00:17:06 1998
-+++ linux-229-changer/drivers/cdrom/Makefile	Wed May 19 00:25:31 1999
+diff -u --new-file --recursive linux-2338/drivers/cdrom/Makefile linux-2338-changer/drivers/cdrom/Makefile
+--- linux-2338/drivers/cdrom/Makefile	Fri Aug 21 00:17:06 1998
++++ linux-2338-changer/drivers/cdrom/Makefile	Tue Feb  1 01:22:19 2000
 @@ -24,6 +24,7 @@
  # Each configuration option enables a list of files.
  
  obj-$(CONFIG_BLK_DEV_IDECD)	+=              cdrom.o
-+obj-$(CONFIG_CHANGER)		+= cdrom.o
++obj-$(CONFIG_CHANGER)		+=						cdrom.o
  obj-$(CONFIG_BLK_DEV_SR)	+=              cdrom.o
  obj-$(CONFIG_PARIDE_PCD)	+=		cdrom.o
  
-diff -u --new-file --recursive linux-229/include/linux/blk.h linux-229-changer/include/linux/blk.h
---- linux-229/include/linux/blk.h	Tue May 11 19:36:25 1999
-+++ linux-229-changer/include/linux/blk.h	Wed May 19 01:37:54 1999
+diff -u --new-file --recursive linux-2338/include/linux/blk.h linux-2338-changer/include/linux/blk.h
+--- linux-2338/include/linux/blk.h	Sat Jan  8 00:32:20 2000
++++ linux-2338-changer/include/linux/blk.h	Tue Feb  1 01:22:19 2000
 @@ -63,6 +63,7 @@
  extern int ez_init(void);
  extern int bpcd_init(void);
@@ -1470,27 +1546,27 @@ diff -u --new-file --recursive linux-229/include/linux/blk.h linux-229-changer/i
  
  extern void set_device_ro(kdev_t dev,int flag);
  void add_blkdev_randomness(int major);
-@@ -354,6 +355,14 @@
- #define DEVICE_REQUEST do_nbd_request
- #define DEVICE_NR(device) (MINOR(device))
- #define DEVICE_ON(device) 
+@@ -339,6 +340,14 @@
+ #define DEVICE_INTR do_mfm
+ #define DEVICE_REQUEST do_mfm_request
+ #define DEVICE_NR(device) (MINOR(device) >> 6)
++#define DEVICE_ON(device)
 +#define DEVICE_OFF(device)
 +
 +#elif (MAJOR_NR == CHANGER_MAJOR)
 +
-+#define DEVICE_NAME "changer"
-+#define DEVICE_REQUEST do_changer_request
++#define DEVICE_NAME "changer"        
++#define DEVICE_REQUEST do_changer_request        
 +#define DEVICE_NR(device) (MINOR(device))
-+#define DEVICE_ON(device)
+ #define DEVICE_ON(device)
  #define DEVICE_OFF(device)
  
- #endif /* MAJOR_NR == whatever */
-diff -u --new-file --recursive linux-229/include/linux/changer.h linux-229-changer/include/linux/changer.h
---- linux-229/include/linux/changer.h	Thu Jan  1 01:00:00 1970
-+++ linux-229-changer/include/linux/changer.h	Wed May 19 01:41:48 1999
+diff -u --new-file --recursive linux-2338/include/linux/changer.h linux-2338-changer/include/linux/changer.h
+--- linux-2338/include/linux/changer.h	Thu Jan  1 01:00:00 1970
++++ linux-2338-changer/include/linux/changer.h	Tue Feb  1 01:22:19 2000
 @@ -0,0 +1,95 @@
 +/**********************************************************************************************************************
-+  /dev/changer by Jeroen Massar aka fuzzel/unfix <jmassar@unfix.org>               http://unfix.org/projects/changer
++  /dev/changer by Jeroen Massar aka Fuzzel / unfix <jeroen@unfix.org>               http://unfix.org/projects/changer
 +***********************************************************************************************************************
 + TAB=3
 + See changer.c for more info.
@@ -1504,12 +1580,12 @@ diff -u --new-file --recursive linux-229/include/linux/changer.h linux-229-chang
 +#include <linux/kdev_t.h>
 +
 +#define CHANGER_SHORT			"changer"
-+#define CHANGER_AUTHOR			"Jeroen Massar <jmassar@unfix.org>"
++#define CHANGER_AUTHOR			"Jeroen Massar <jeroen@unfix.org>"
 +#define CHANGER_FULL				"/dev/changer"
 +#define CHANGER_WWW				"http://unfix.org/projects/changer"
 +#define CHANGER_LIST				"changer@medusa.unfix.org"
-+#define CHANGER_DATE				"19 May 1999"
-+#define CHANGER_VERSION			19990519
++#define CHANGER_DATE				"1 February 2000"
++#define CHANGER_VERSION			20000201
 +#define CHANGER_VERSION_SET	1
 +
 +#define CHANGER_DEVNAME	CHANGER_SHORT
@@ -1527,8 +1603,8 @@ diff -u --new-file --recursive linux-229/include/linux/changer.h linux-229-chang
 +#define CHANGER_NAME_LEN	20			/* Buffers can be overflowed so watch it. */
 +
 +/* Used with the CHANGER_SET/GET IOCTL
-+   note that whenever (major==0&&minor==0&&slot==0&&name=="") that means the device is unused.
-+	It is sufficient to check (major==0&&minor==0) for this case... */
++   note that whenever ((major == 0) && (minor == 0) && (slot == 0) && (name == "")) that means the device is unused.
++	It is sufficient to check ( (major == 0) && (minor == 0) ) for this case... */
 +struct changer_set
 +{
 +	int		version;						/* Version (Should be CHANGER_VERSION_SET). */
@@ -1584,22 +1660,22 @@ diff -u --new-file --recursive linux-229/include/linux/changer.h linux-229-chang
 +#endif __KERNEL__
 +#endif _CHANGER_H
 +
-diff -u --new-file --recursive linux-229/include/linux/major.h linux-229-changer/include/linux/major.h
---- linux-229/include/linux/major.h	Wed Oct 14 20:43:14 1998
-+++ linux-229-changer/include/linux/major.h	Wed May 19 00:25:31 1999
-@@ -72,6 +72,7 @@
+diff -u --new-file --recursive linux-2338/include/linux/major.h linux-2338-changer/include/linux/major.h
+--- linux-2338/include/linux/major.h	Fri Jan  7 23:11:21 2000
++++ linux-2338-changer/include/linux/major.h	Tue Feb  1 01:22:19 2000
+@@ -73,6 +73,7 @@
  #define Z2RAM_MAJOR	37
  #define APBLOCK_MAJOR   38   /* AP1000 Block device */
  #define DDV_MAJOR       39   /* AP1000 DDV block device */
-+#define CHANGER_MAJOR	42
++#define CHANGER_MAJOR	42   /* /dev/changer device */
  #define NBD_MAJOR	43   /* Network block device	*/
  #define RISCOM8_NORMAL_MAJOR 48
- #define RISCOM8_CALLOUT_MAJOR 49
-diff -u --new-file --recursive linux-229/init/main.c linux-229-changer/init/main.c
---- linux-229/init/main.c	Tue May 11 18:57:14 1999
-+++ linux-229-changer/init/main.c	Wed May 19 00:25:31 1999
-@@ -344,6 +344,10 @@
- extern void md_setup(char *str,int *ints) __init;
+ #define DAC960_MAJOR	48	/* 48..55 */
+diff -u --new-file --recursive linux-2338/init/main.c linux-2338-changer/init/main.c
+--- linux-2338/init/main.c	Fri Jan  7 01:17:18 2000
++++ linux-2338-changer/init/main.c	Tue Feb  1 01:25:32 2000
+@@ -103,6 +103,10 @@
+ extern void dquot_init_hash(void);
  #endif
  
 +#ifdef CONFIG_CHANGER
@@ -1609,13 +1685,13 @@ diff -u --new-file --recursive linux-229/init/main.c linux-229-changer/init/main
  /*
   * Boot command-line arguments
   */
-@@ -860,6 +864,9 @@
+@@ -636,6 +640,9 @@
  #endif
- #ifdef CONFIG_LTPC
- 	{ "ltpc=", ltpc_setup },
+ #ifdef CONFIG_ISAPNP
+ 	isapnp_init();
 +#endif
 +#ifdef CONFIG_CHANGER
-+	{ "changer=",changer_setup },
++	changer_init();
  #endif
- 	{ 0, 0 }
- };
+ 
+ 	/* Networking initialization needs a process context */ 
